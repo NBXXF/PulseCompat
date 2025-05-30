@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
-import Pulse
-import CoreData
 import Combine
+import CoreData
+import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct ConsoleMessageCell: View {
@@ -22,15 +22,15 @@ struct ConsoleMessageCell: View {
                 .foregroundColor(.textColor(for: message.logLevel))
                 .lineLimit(settings.lineLimit)
         }
-#if os(macOS)
-        contents.padding(.vertical, 5)
-#else
-        if #unavailable(iOS 16) {
-            contents.padding(.vertical, 4)
-        } else {
-            contents
-        }
-#endif
+        #if os(macOS)
+            contents.padding(.vertical, 5)
+        #else
+            if #unavailable(iOS 16) {
+                contents.padding(.vertical, 4)
+            } else {
+                contents
+            }
+        #endif
     }
 
     @ViewBuilder
@@ -38,11 +38,11 @@ struct ConsoleMessageCell: View {
         HStack {
             Text(title)
                 .lineLimit(1)
-#if os(iOS) || os(visionOS)
+            #if os(iOS) || os(visionOS)
                 .font(ConsoleConstants.fontInfo.weight(.medium))
-#else
+            #else
                 .font(ConsoleConstants.fontTitle.weight(.medium))
-#endif
+            #endif
                 .foregroundColor(titleColor)
             Spacer()
             Components.makePinView(for: message)
@@ -113,33 +113,33 @@ extension Color {
 }
 
 #if DEBUG
-@available(iOS 15, visionOS 1.0, *)
-struct ConsoleMessageCell_Previews: PreviewProvider {
-    static var previews: some View {
-        ConsoleMessageCell(message: try! LoggerStore.mock.allMessages()[0])
-            .injecting(ConsoleEnvironment(store: .mock))
-            .padding()
-            .previewLayout(.sizeThatFits)
+    @available(iOS 15, visionOS 1.0, *)
+    struct ConsoleMessageCell_Previews: PreviewProvider {
+        static var previews: some View {
+            ConsoleMessageCell(message: try! LoggerStore.mock.allMessages()[0])
+                .injecting(ConsoleEnvironment(store: .mock))
+                .padding()
+                .previewLayout(.sizeThatFits)
+        }
     }
-}
 #endif
 
-struct ConsoleConstants {
-#if os(watchOS)
-    static let fontTitle = Font.system(size: 14)
-    static let fontInfo = Font.system(size: 14)
-    static let fontBody = Font.system(size: 15)
-#elseif os(macOS)
-    static let fontTitle = Font.subheadline
-    static let fontInfo = Font.subheadline
-    static let fontBody = Font.body
-#elseif os(iOS) || os(visionOS)
-    static let fontTitle = Font.subheadline.monospacedDigit()
-    static let fontInfo = Font.caption.monospacedDigit()
-    static let fontBody = Font.callout
-#else
-    static let fontTitle = Font.caption
-    static let fontInfo = Font.caption
-    static let fontBody = Font.caption
-#endif
+enum ConsoleConstants {
+    #if os(watchOS)
+        static let fontTitle = Font.system(size: 14)
+        static let fontInfo = Font.system(size: 14)
+        static let fontBody = Font.system(size: 15)
+    #elseif os(macOS)
+        static let fontTitle = Font.subheadline
+        static let fontInfo = Font.subheadline
+        static let fontBody = Font.body
+    #elseif os(iOS) || os(visionOS)
+        static let fontTitle = Font.subheadline.monospacedDigit()
+        static let fontInfo = Font.caption.monospacedDigit()
+        static let fontBody = Font.callout
+    #else
+        static let fontTitle = Font.caption
+        static let fontInfo = Font.caption
+        static let fontBody = Font.caption
+    #endif
 }

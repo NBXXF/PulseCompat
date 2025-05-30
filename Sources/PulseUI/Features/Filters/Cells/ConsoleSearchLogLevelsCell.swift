@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct ConsoleSearchLogLevelsCell: View {
     @Binding var selection: Set<LoggerStore.Level>
@@ -32,47 +32,47 @@ struct ConsoleSearchLogLevelsCell: View {
         })
     }
 
-#if os(macOS)
-    var body: some View {
-        VStack(alignment: .leading, spacing: -16) {
-            HStack {
-                Spacer()
-                Button(isAllSelected ? "Deselect All" : "Select All", action: toggleSelectAll)
-            }
-            HStack(spacing: 24) {
-                makeLevelsSection(levels: [.trace, .debug, .info])
-                makeLevelsSection(levels: [.notice, .warning])
-                makeLevelsSection(levels: [.error, .critical])
-            }
-            .fixedSize()
-        }
-    }
-
-    private func makeLevelsSection(levels: [LoggerStore.Level]) -> some View {
-        VStack(alignment: .leading) {
-            Spacer()
-            ForEach(levels, id: \.self) { level in
-                Toggle(level.name.capitalized, isOn: binding(forLevel: level))
-            }
-        }
-    }
-#else
-    var body: some View {
-        Section {
-            ForEach(LoggerStore.Level.allCases, id: \.self) { level in
+    #if os(macOS)
+        var body: some View {
+            VStack(alignment: .leading, spacing: -16) {
                 HStack {
-                    Checkbox(level.name.capitalized, isOn: binding(forLevel: level))
-#if os(iOS) || os(visionOS)
-                    Circle()
-                        .frame(width: 8, height: 8)
-                        .foregroundColor(Color.textColor(for: level))
-#endif
+                    Spacer()
+                    Button(isAllSelected ? "Deselect All" : "Select All", action: toggleSelectAll)
+                }
+                HStack(spacing: 24) {
+                    makeLevelsSection(levels: [.trace, .debug, .info])
+                    makeLevelsSection(levels: [.notice, .warning])
+                    makeLevelsSection(levels: [.error, .critical])
+                }
+                .fixedSize()
+            }
+        }
+
+        private func makeLevelsSection(levels: [LoggerStore.Level]) -> some View {
+            VStack(alignment: .leading) {
+                Spacer()
+                ForEach(levels, id: \.self) { level in
+                    Toggle(level.name.capitalized, isOn: binding(forLevel: level))
                 }
             }
         }
-        Section {
-            Button(isAllSelected ? "Deselect All" : "Select All", action: toggleSelectAll)
+    #else
+        var body: some View {
+            Section {
+                ForEach(LoggerStore.Level.allCases, id: \.self) { level in
+                    HStack {
+                        Checkbox(level.name.capitalized, isOn: binding(forLevel: level))
+                        #if os(iOS) || os(visionOS)
+                            Circle()
+                                .frame(width: 8, height: 8)
+                                .foregroundColor(Color.textColor(for: level))
+                        #endif
+                    }
+                }
+            }
+            Section {
+                Button(isAllSelected ? "Deselect All" : "Select All", action: toggleSelectAll)
+            }
         }
-    }
-#endif
+    #endif
 }

@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import CoreData
-import Pulse
 import Combine
+import CoreData
+import Foundation
+import Pulse
 import SwiftUI
 
 protocol ConsoleDataSourceDelegate: AnyObject {
@@ -67,7 +67,7 @@ final class ConsoleDataSource: NSObject, NSFetchedResultsControllerDelegate {
 
         let request = NSFetchRequest<NSManagedObject>(entityName: entityName)
         request.sortDescriptors = [
-            NSSortDescriptor(key: sortKey, ascending: options.order == .ascending)
+            NSSortDescriptor(key: sortKey, ascending: options.order == .ascending),
         ].compactMap { $0 }
         request.fetchBatchSize = ConsoleDataSource.fetchBatchSize
         request.relationshipKeyPathsForPrefetching = ["request"]
@@ -115,11 +115,11 @@ final class ConsoleDataSource: NSObject, NSFetchedResultsControllerDelegate {
 
     // MARK: NSFetchedResultsControllerDelegate
 
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+    func controllerDidChangeContent(_: NSFetchedResultsController<NSFetchRequestResult>) {
         delegate?.dataSource(self, didUpdateWith: nil)
     }
 
-    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChangeContentWith diff: CollectionDifference<NSManagedObjectID>) {
+    func controller(_: NSFetchedResultsController<NSFetchRequestResult>, didChangeContentWith diff: CollectionDifference<NSManagedObjectID>) {
         delegate?.dataSource(self, didUpdateWith: diff)
     }
 
@@ -135,7 +135,7 @@ final class ConsoleDataSource: NSObject, NSFetchedResultsControllerDelegate {
         let predicates = [
             _makePredicate(mode, options.filters, options.isOnlyErrors),
             options.predicate,
-            filter
+            filter,
         ].compactMap { $0 }
         switch predicates.count {
         case 0: return nil

@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 import Pulse
 
-extension NetworkLogger {
+public extension NetworkLogger {
     /// Enables automatic logging and remote debugging of network requests.
     ///
     /// - warning: This method of logging relies heavily on swizzling and might
@@ -14,7 +14,7 @@ extension NetworkLogger {
     /// manually logging the requests using ``NetworkLogger``.
     ///
     /// - parameter logger: The network logger to be used for recording the requests. By default, uses shared logger.
-    public static func enableProxy(logger: NetworkLogger? = nil) {
+    static func enableProxy(logger: NetworkLogger? = nil) {
         URLSessionSwizzler.enable(logger: logger)
     }
 }
@@ -26,7 +26,7 @@ final class URLSessionSwizzler {
     private let _logger: NetworkLogger?
 
     init(logger: NetworkLogger?) {
-        self._logger = logger
+        _logger = logger
     }
 
     static let lock = NSLock()
@@ -66,11 +66,12 @@ final class URLSessionSwizzler {
         }
         // "__NSCFURLSessionTask"
         if let sessionTaskClass = NSClassFromString(["__", "NS", "CFURL", "Session", "Task"].joined()),
-           let method = class_getInstanceMethod(sessionTaskClass, NSSelectorFromString("resume")) {
+           let method = class_getInstanceMethod(sessionTaskClass, NSSelectorFromString("resume"))
+        {
             methods.append(method)
         }
-        methods.forEach {
-            let method = $0
+        for item in methods {
+            let method = item
             var originalImplementation: IMP?
             let block: @convention(block) (URLSessionTask) -> Void = { [weak self] task in
                 self?.logger.logTaskCreated(task)
@@ -92,7 +93,8 @@ final class URLSessionSwizzler {
         // "_didFinishWithError:"
         let selector = NSSelectorFromString(["_", "didFinish", "With", "Error", ":"].joined())
         guard let method = class_getInstanceMethod(baseClass, selector),
-              baseClass.instancesRespond(to: selector) else {
+              baseClass.instancesRespond(to: selector)
+        else {
             return
         }
         typealias MethodSignature = @convention(c) (AnyObject, Selector, AnyObject?) -> Void
@@ -125,13 +127,14 @@ final class URLSessionSwizzler {
         // "_didReceiveData"
         let selector = NSSelectorFromString(["_", "did", "Receive", "Data", ":"].joined())
         guard let method = class_getInstanceMethod(baseClass, selector),
-              baseClass.instancesRespond(to: selector) else {
+              baseClass.instancesRespond(to: selector)
+        else {
             return
         }
 
-        typealias MethodSignature =  @convention(c) (AnyObject, Selector, AnyObject) -> Void
+        typealias MethodSignature = @convention(c) (AnyObject, Selector, AnyObject) -> Void
         let originalImp: IMP = method_getImplementation(method)
-        let closure: @convention(block) (AnyObject, AnyObject) -> Void = { [weak self] (object, data) in
+        let closure: @convention(block) (AnyObject, AnyObject) -> Void = { [weak self] object, data in
             let original: MethodSignature = unsafeBitCast(originalImp, to: MethodSignature.self)
             original(object, selector, data)
 

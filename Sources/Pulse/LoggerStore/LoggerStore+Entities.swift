@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import CoreData
 
@@ -24,7 +24,7 @@ public final class LoggerMessageEntity: NSManagedObject {
     @NSManaged public var rawMetadata: String
     @NSManaged public var task: NetworkTaskEntity?
 
-    public lazy var metadata = { KeyValueEncoding.decodeKeyValuePairs(rawMetadata) }()
+    public lazy var metadata = KeyValueEncoding.decodeKeyValuePairs(rawMetadata)
 }
 
 public final class NetworkTaskEntity: NSManagedObject {
@@ -37,6 +37,7 @@ public final class NetworkTaskEntity: NSManagedObject {
     public var type: NetworkLogger.TaskType? {
         NetworkLogger.TaskType(rawValue: taskType)
     }
+
     @NSManaged public var taskType: Int16
 
     // MARK: Request
@@ -101,7 +102,7 @@ public final class NetworkTaskEntity: NSManagedObject {
 
     // MARK: Helpers
 
-    public lazy var metadata = { rawMetadata.map(KeyValueEncoding.decodeKeyValuePairs) }()
+    public lazy var metadata = rawMetadata.map(KeyValueEncoding.decodeKeyValuePairs)
 
     /// Returns request state.
     public var state: State {
@@ -252,7 +253,7 @@ public final class NetworkRequestEntity: NSManagedObject {
         headers["Content-Type"].flatMap(NetworkLogger.ContentType.init)
     }
 
-    public lazy var headers: [String: String] = { KeyValueEncoding.decodeKeyValuePairs(httpHeaders) }()
+    public lazy var headers: [String: String] = KeyValueEncoding.decodeKeyValuePairs(httpHeaders)
 }
 
 public final class NetworkResponseEntity: NSManagedObject {
@@ -267,7 +268,7 @@ public final class NetworkResponseEntity: NSManagedObject {
         headers["Content-Length"].flatMap { Int64($0) }
     }
 
-    public lazy var headers: [String: String] = { KeyValueEncoding.decodeKeyValuePairs(httpHeaders) }()
+    public lazy var headers: [String: String] = KeyValueEncoding.decodeKeyValuePairs(httpHeaders)
 }
 
 /// Doesn't contain any data, just the key and some additional payload.

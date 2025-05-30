@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 import Pulse
 
 /// Keeps track of hosts, paths, etc.
@@ -37,10 +37,10 @@ final class LoggerStoreIndex: ObservableObject {
 
     private func handle(_ event: LoggerStore.Event) {
         switch event {
-        case .messageStored(let event):
-            self.files.insert(event.file)
-            self.labels.insert(event.label)
-        case .networkTaskCompleted(let event):
+        case let .messageStored(event):
+            files.insert(event.file)
+            labels.insert(event.label)
+        case let .networkTaskCompleted(event):
             if let host = event.originalRequest.url.flatMap(getHost) {
                 var hosts = self.hosts
                 let (isInserted, _) = hosts.insert(host)
@@ -78,10 +78,10 @@ final class LoggerStoreIndex: ObservableObject {
     }
 
     func clear() {
-        self.labels = []
-        self.files = []
-        self.paths = []
-        self.hosts = []
+        labels = []
+        files = []
+        paths = []
+        hosts = []
     }
 }
 

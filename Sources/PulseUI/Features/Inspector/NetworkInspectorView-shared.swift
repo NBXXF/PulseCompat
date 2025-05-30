@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1, macOS 13, *)
 extension NetworkInspectorView {

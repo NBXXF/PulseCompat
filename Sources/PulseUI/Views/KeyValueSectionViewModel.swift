@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct KeyValueSectionViewModel {
     var title: String
@@ -15,7 +15,7 @@ extension KeyValueSectionViewModel {
     static func makeParameters(for request: NetworkRequestEntity) -> KeyValueSectionViewModel {
         var items: [(String, String?)] = [
             ("Cache Policy", request.cachePolicy.description),
-            ("Timeout Interval", DurationFormatter.string(from: TimeInterval(request.timeoutInterval), isPrecise: false))
+            ("Timeout Interval", DurationFormatter.string(from: TimeInterval(request.timeoutInterval), isPrecise: false)),
         ]
         // Display only non-default values
         if !request.allowsCellularAccess {
@@ -47,7 +47,7 @@ extension KeyValueSectionViewModel {
         let taskType = task.type?.urlSessionTaskClassName ?? "URLSessionDataTask"
         var items: [(String, String?)] = [
             ("Host", task.url.flatMap(URL.init)?.host),
-            ("Date", task.startDate.map(DateFormatter.fullDateFormatter.string))
+            ("Date", task.startDate.map(DateFormatter.fullDateFormatter.string)),
         ]
         if task.duration > 0 {
             items.append(("Duration", DurationFormatter.string(from: task.duration)))
@@ -73,8 +73,9 @@ extension KeyValueSectionViewModel {
                 ("Host", components.host),
                 ("Path", components.path),
                 ("Query", components.query),
-                ("Fragment", components.fragment)
-            ].filter { $0.1?.isEmpty == false })
+                ("Fragment", components.fragment),
+            ].filter { $0.1?.isEmpty == false }
+        )
     }
 
     static func makeHeaders(title: String, headers: [String: String]?) -> KeyValueSectionViewModel {
@@ -98,8 +99,9 @@ extension KeyValueSectionViewModel {
             items: [
                 ("Domain", task.errorDomain),
                 ("Code", descriptionForError(domain: task.errorDomain, code: task.errorCode)),
-                ("Description", task.errorDebugDescription)
-            ])
+                ("Description", task.errorDebugDescription),
+            ]
+        )
     }
 
     private static func descriptionForError(domain: String?, code: Int32) -> String {
@@ -112,7 +114,8 @@ extension KeyValueSectionViewModel {
     static func makeQueryItems(for url: URL) -> KeyValueSectionViewModel? {
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
               let queryItems = components.queryItems,
-              !queryItems.isEmpty else {
+              !queryItems.isEmpty
+        else {
             return nil
         }
         return makeQueryItems(for: queryItems)
@@ -132,7 +135,7 @@ extension KeyValueSectionViewModel {
             makeTransferSection(for: transaction),
             makeProtocolSection(for: transaction),
             makeMiscSection(for: transaction),
-            makeSecuritySection(for: transaction)
+            makeSecuritySection(for: transaction),
         ].compactMap { $0 }
     }
 
@@ -167,12 +170,12 @@ extension KeyValueSectionViewModel {
         addDate(timing.requestEndDate, title: "Request End")
         addDate(timing.responseStartDate, title: "Response Start")
         addDate(timing.responseEndDate, title: "Response End")
-#if !os(watchOS)
-        let longestTitleCount = items.map(\.0.count).max() ?? 0
-        items = items.map {
-            ($0.0.padding(toLength: longestTitleCount + 1, withPad: " ", startingAt: 0), $0.1)
-        }
-#endif
+        #if !os(watchOS)
+            let longestTitleCount = items.map(\.0.count).max() ?? 0
+            items = items.map {
+                ($0.0.padding(toLength: longestTitleCount + 1, withPad: " ", startingAt: 0), $0.1)
+            }
+        #endif
         return KeyValueSectionViewModel(title: "Timing", color: .orange, items: items)
     }
 
@@ -184,7 +187,7 @@ extension KeyValueSectionViewModel {
             ("Request Body (Encoded)", formatBytes(transferSize.requestBodyBytesSent)),
             ("Response Headers", formatBytes(transferSize.responseHeaderBytesReceived)),
             ("Response Body", formatBytes(transferSize.responseBodyBytesReceived)),
-            ("Response Body (Decoded)", formatBytes(transferSize.responseBodyBytesAfterDecoding))
+            ("Response Body (Decoded)", formatBytes(transferSize.responseBodyBytesAfterDecoding)),
         ])
     }
 
@@ -194,18 +197,19 @@ extension KeyValueSectionViewModel {
             ("Remote Address", metrics.remoteAddress),
             ("Remote Port", metrics.remotePort > 0 ? String(metrics.remotePort) : nil),
             ("Local Address", metrics.localAddress),
-            ("Local Port", metrics.localPort > 0 ? String(metrics.localPort) : nil)
+            ("Local Port", metrics.localPort > 0 ? String(metrics.localPort) : nil),
         ])
     }
 
     private static func makeSecuritySection(for metrics: NetworkTransactionMetricsEntity) -> KeyValueSectionViewModel? {
         guard let suite = metrics.negotiatedTLSCipherSuite,
-              let version = metrics.negotiatedTLSProtocolVersion else {
+              let version = metrics.negotiatedTLSProtocolVersion
+        else {
             return nil
         }
         return KeyValueSectionViewModel(title: "Security", color: .primary, items: [
             ("Cipher Suite", suite.description),
-            ("Protocol Version", version.description)
+            ("Protocol Version", version.description),
         ])
     }
 
@@ -216,7 +220,7 @@ extension KeyValueSectionViewModel {
             ("Constrained", metrics.isConstrained.description),
             ("Proxy Connection", metrics.isProxyConnection.description),
             ("Reused Connection", metrics.isReusedConnection.description),
-            ("Multipath", metrics.isMultipath.description)
+            ("Multipath", metrics.isMultipath.description),
         ])
     }
 
@@ -229,7 +233,7 @@ extension KeyValueSectionViewModel {
             ("Expires", cookie.expiresDate?.description(with: Locale(identifier: "en_US"))),
             ("Secure", "\(cookie.isSecure)"),
             ("HTTP Only", "\(cookie.isHTTPOnly)"),
-            ("Session Only", "\(cookie.isSessionOnly)")
+            ("Session Only", "\(cookie.isSessionOnly)"),
         ])
     }
 }

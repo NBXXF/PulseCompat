@@ -1,19 +1,19 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
 #if os(macOS)
-import AppKit
+    import AppKit
 #endif
 
 #if os(iOS) || os(visionOS)
-import PDFKit
+    import PDFKit
 #endif
 
 #if os(iOS) || os(tvOS) || os(visionOS)
-import UIKit
+    import UIKit
 #endif
 
 enum TextUtilities {
@@ -24,7 +24,7 @@ enum TextUtilities {
     static func html(from string: NSAttributedString) throws -> Data {
         let range = NSRange(location: 0, length: string.length)
         let data = try string.data(from: range, documentAttributes: [
-            .documentType: NSAttributedString.DocumentType.html
+            .documentType: NSAttributedString.DocumentType.html,
         ])
         guard let html = NSMutableString(data: data, encoding: NSUTF8StringEncoding) else {
             return data
@@ -81,43 +81,43 @@ enum TextUtilities {
     }
 
     /// Renders the given attributed string as PDF
-#if os(iOS) || os(visionOS)
-    static func pdf(from string: NSAttributedString) throws -> Data {
-        let string = NSMutableAttributedString(attributedString: string)
-        string.enumerateAttribute(.font, in: NSRange(location: 0, length: string.length)) { font, range, _ in
-            guard let font = font as? UXFont else { return }
-            let scaledFont = UXFont(descriptor: font.fontDescriptor, size: (font.pointSize * 0.7).rounded())
-            string.addAttribute(.font, value: scaledFont, range: range)
+    #if os(iOS) || os(visionOS)
+        static func pdf(from string: NSAttributedString) throws -> Data {
+            let string = NSMutableAttributedString(attributedString: string)
+            string.enumerateAttribute(.font, in: NSRange(location: 0, length: string.length)) { font, range, _ in
+                guard let font = font as? UXFont else { return }
+                let scaledFont = UXFont(descriptor: font.fontDescriptor, size: (font.pointSize * 0.7).rounded())
+                string.addAttribute(.font, value: scaledFont, range: range)
+            }
+            let formatter = UISimpleTextPrintFormatter(attributedText: string)
+            let renderer = UIPrintPageRenderer()
+            renderer.addPrintFormatter(formatter, startingAtPageAt: 0)
+
+            let pageSize = CGSize(width: 612, height: 792) // US letter size
+            let pageMargins = UIEdgeInsets(top: 32, left: 32, bottom: 32, right: 32)
+
+            // Calculate the printable rect from the above two
+            let printableRect = CGRect(x: pageMargins.left, y: pageMargins.top, width: pageSize.width - pageMargins.left - pageMargins.right, height: pageSize.height - pageMargins.top - pageMargins.bottom)
+            let paperRect = CGRect(x: 0, y: 0, width: pageSize.width, height: pageSize.height)
+
+            renderer.setValue(NSValue(cgRect: paperRect), forKey: "paperRect")
+            renderer.setValue(NSValue(cgRect: printableRect), forKey: "printableRect")
+
+            let data = NSMutableData()
+
+            UIGraphicsBeginPDFContextToData(data, paperRect, nil)
+            renderer.prepare(forDrawingPages: NSRange(location: 0, length: renderer.numberOfPages))
+
+            let bounds = UIGraphicsGetPDFContextBounds()
+            for i in 0 ..< renderer.numberOfPages {
+                UIGraphicsBeginPDFPage()
+                renderer.drawPage(at: i, in: bounds)
+            }
+            UIGraphicsEndPDFContext()
+
+            return data as Data
         }
-        let formatter = UISimpleTextPrintFormatter(attributedText: string)
-        let renderer = UIPrintPageRenderer()
-        renderer.addPrintFormatter(formatter, startingAtPageAt: 0)
-
-        let pageSize = CGSize(width: 612, height: 792) // US letter size
-        let pageMargins = UIEdgeInsets(top: 32, left: 32, bottom: 32, right: 32)
-
-        // Calculate the printable rect from the above two
-        let printableRect = CGRect(x: pageMargins.left, y: pageMargins.top, width: pageSize.width - pageMargins.left - pageMargins.right, height: pageSize.height - pageMargins.top - pageMargins.bottom)
-        let paperRect = CGRect(x: 0, y: 0, width: pageSize.width, height: pageSize.height)
-
-        renderer.setValue(NSValue(cgRect: paperRect), forKey: "paperRect")
-        renderer.setValue(NSValue(cgRect: printableRect), forKey: "printableRect")
-
-        let data = NSMutableData()
-
-        UIGraphicsBeginPDFContextToData(data, paperRect, nil)
-        renderer.prepare(forDrawingPages: NSRange(location: 0, length: renderer.numberOfPages))
-
-        let bounds = UIGraphicsGetPDFContextBounds()
-        for i in 0  ..< renderer.numberOfPages {
-            UIGraphicsBeginPDFPage()
-            renderer.drawPage(at: i, in: bounds)
-        }
-        UIGraphicsEndPDFContext()
-
-        return data as Data
-    }
-#endif
+    #endif
 
     static func har(from string: NSAttributedString) -> Data {
         string.string.data(using: .utf8) ?? Data()
@@ -125,11 +125,11 @@ enum TextUtilities {
 }
 
 private var isDarkMode: Bool {
-#if os(iOS) || os(tvOS) || os(visionOS)
-    return UIViewController().traitCollection.userInterfaceStyle == .dark
-#elseif os(watchOS)
-    return true
-#elseif os(macOS)
-    return NSAppearance.currentDrawing().name != .aqua
-#endif
+    #if os(iOS) || os(tvOS) || os(visionOS)
+        return UIViewController().traitCollection.userInterfaceStyle == .dark
+    #elseif os(watchOS)
+        return true
+    #elseif os(macOS)
+        return NSAppearance.currentDrawing().name != .aqua
+    #endif
 }

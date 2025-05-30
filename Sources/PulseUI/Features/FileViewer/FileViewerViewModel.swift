@@ -1,14 +1,14 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
+import Combine
 import CoreData
 import Pulse
-import Combine
+import SwiftUI
 
 #if os(iOS) || os(macOS) || os(visionOS)
-import PDFKit
+    import PDFKit
 #endif
 
 final class FileViewerViewModel: ObservableObject {
@@ -22,15 +22,15 @@ final class FileViewerViewModel: ObservableObject {
     init(title: String, context: FileViewerViewModelContext, data: @escaping () -> Data) {
         self.title = title
         self.context = context
-        self.getData = data
+        getData = data
     }
 
     enum Contents {
         case image(ImagePreviewViewModel)
         case other(RichTextViewModel)
-#if os(iOS) || os(macOS) || os(visionOS)
-        case pdf(PDFDocument)
-#endif
+        #if os(iOS) || os(macOS) || os(visionOS)
+            case pdf(PDFDocument)
+        #endif
     }
 
     private func render(data: Data) -> Contents {
@@ -45,11 +45,11 @@ final class FileViewerViewModel: ObservableObject {
     }
 
     private func makePDF(data: Data) -> Contents? {
-#if os(iOS) || os(macOS) || os(visionOS)
-        if let pdf = PDFDocument(data: data) {
-            return .pdf(pdf)
-        }
-#endif
+        #if os(iOS) || os(macOS) || os(visionOS)
+            if let pdf = PDFDocument(data: data) {
+                return .pdf(pdf)
+            }
+        #endif
         return nil
     }
 }

@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import CoreData
 import Foundation
 import Pulse
-import CoreData
 
 extension ConsoleFilters {
     static func makeMessagePredicates(
@@ -34,7 +34,7 @@ extension ConsoleFilters {
     }
 }
 
-private func makePredicates(for criteria: ConsoleFilters.Shared, isNetwork: Bool = false) -> [NSPredicate] {
+private func makePredicates(for criteria: ConsoleFilters.Shared, isNetwork _: Bool = false) -> [NSPredicate] {
     var predicates = [NSPredicate]()
 
     if !criteria.sessions.selection.isEmpty {

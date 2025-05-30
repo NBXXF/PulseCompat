@@ -1,13 +1,13 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
 #if os(macOS)
-import AppKit
+    import AppKit
 #else
-import UIKit
+    import UIKit
 #endif
 
 final class TextRendererHTML {
@@ -18,7 +18,7 @@ final class TextRendererHTML {
     init(html: String, options: TextRenderer.Options = .init()) {
         self.html = html
         self.options = options
-        self.helper = TextHelper()
+        helper = TextHelper()
     }
 
     func render() -> NSAttributedString {
@@ -28,10 +28,11 @@ final class TextRendererHTML {
             return string
         }
         func makeRange(from substring: Substring) -> NSRange {
-            NSRange(substring.startIndex..<substring.endIndex, in: html)
+            NSRange(substring.startIndex ..< substring.endIndex, in: html)
         }
         guard let tagRegex = try? Regex("<[^>]*>"),
-              let attributesRegex = try? Regex(#"(\w*?)=(\"\w.*?\")"#) else {
+              let attributesRegex = try? Regex(#"(\w*?)=(\"\w.*?\")"#)
+        else {
             assertionFailure("Invalid regex") // Should never happen
             return string
         }

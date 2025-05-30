@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import CryptoKit
 import Foundation
 import Network
-import CryptoKit
 import OSLog
 
 @MainActor
@@ -14,7 +14,7 @@ protocol RemoteLoggerConnectionDelegate: AnyObject {
 }
 
 extension RemoteLogger {
-    final class Connection: @unchecked Sendable  {
+    final class Connection: @unchecked Sendable {
         var endpoint: NWEndpoint { connection.endpoint }
         private let connection: NWConnection
         private var buffer = Data()
@@ -35,7 +35,7 @@ extension RemoteLogger {
             self.delegate = delegate
 
             let isLogEnabled = UserDefaults.standard.bool(forKey: "com.github.kean.pulse.debug")
-            self.log = isLogEnabled ? OSLog(subsystem: "com.github.kean.pulse", category: "RemoteLogger") : .disabled
+            log = isLogEnabled ? OSLog(subsystem: "com.github.kean.pulse", category: "RemoteLogger") : .disabled
         }
 
         func start() {
@@ -117,11 +117,12 @@ extension RemoteLogger {
         private func send(event: Event) {
             // If it's a response for a message, pass it to the registered handler.
             // Otherwise, send it to the delegate as a new message.
-            if case .packet(let packet) = event,
+            if case let .packet(packet) = event,
                packet.code == RemoteLogger.PacketCode.message.rawValue,
                let header = Message.Header(packet.body),
                header.options.contains(.response),
-               let handler = handlers.removeValue(forKey: header.id) {
+               let handler = handlers.removeValue(forKey: header.id)
+            {
                 handler(try? Message.decode(packet.body).data, nil)
             } else {
                 DispatchQueue.main.async {
@@ -133,11 +134,11 @@ extension RemoteLogger {
         func send(code: UInt8, data: Data) {
             do {
                 let data = try encode(code: code, body: data)
-                connection.send(content: data, completion: .contentProcessed({ [weak self] error in
+                connection.send(content: data, completion: .contentProcessed { [weak self] error in
                     if let error {
                         self?.logSendDataError(error)
                     }
-                }))
+                })
             } catch {
                 os_log("Failed to encode a packet: %{public}@", log: log, type: .error, "\(error)")
             }
@@ -158,7 +159,7 @@ extension RemoteLogger {
 
         func sendMessage<T: Encodable>(path: Path, entity: T, _ completion: ((Data?, Error?) -> Void)? = nil) {
             do {
-                sendMessage(path: path, data: try JSONEncoder().encode(entity), completion)
+                try sendMessage(path: path, data: JSONEncoder().encode(entity), completion)
             } catch {
                 os_log("Failed to send a message: %{public}@", log: log, type: .error, "\(error)")
             }
@@ -193,7 +194,7 @@ extension RemoteLogger {
 
         func sendResponse<T: Encodable>(for message: Message, entity: T) {
             do {
-                sendResponse(for: message, data: try JSONEncoder().encode(entity))
+                try sendResponse(for: message, data: JSONEncoder().encode(entity))
             } catch {
                 os_log("Failed to encode a response: %{public}@", log: log, type: .error, "\(error)")
             }
@@ -237,7 +238,7 @@ extension RemoteLogger {
             throw PacketParsingError.notEnoughData
         }
         let body = buffer.from(header.contentOffset, size: Int(header.contentSize))
-        let packet = Connection.Packet(code: header.code, body: try body.decompressed())
+        let packet = try Connection.Packet(code: header.code, body: body.decompressed())
         return (packet, header.compressedPacketLength)
     }
 
@@ -260,8 +261,8 @@ extension RemoteLogger {
             guard data.count >= PacketHeader.size else {
                 throw PacketParsingError.notEnoughData
             }
-            self.code = data[data.startIndex]
-            self.contentSize = UInt32(data.from(1, size: 4))
+            code = data[data.startIndex]
+            contentSize = UInt32(data.from(1, size: 4))
         }
     }
 }
@@ -274,7 +275,7 @@ extension NWParameters {
 
         self.init(tls: NWParameters.tlsOptions(passcode: passcode), tcp: tcpOptions)
 
-        self.includePeerToPeer = true
+        includePeerToPeer = true
     }
 
     // Create TLS options using a passcode to derive a preshared key.

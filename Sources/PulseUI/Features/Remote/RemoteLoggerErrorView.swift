@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Network
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct RemoteLoggerErrorView: View {
@@ -11,7 +11,7 @@ struct RemoteLoggerErrorView: View {
 
     var body: some View {
         switch error {
-        case .dns(let error):
+        case let .dns(error):
             switch Int(error) {
             case kDNSServiceErr_NoAuth:
                 RemoteLoggerNoAuthView()
@@ -47,11 +47,11 @@ private struct RemoteLoggerPolicyDeniedView: View {
             Text("Open **Settings** / **Privacy** / **Local Network** and check that the app is listed and the toggle is enabled")
                 .font(.subheadline)
         }
-#if os(iOS) || os(visionOS)
-        Button("Open Settings") {
-            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
-        }
-#endif
+        #if os(iOS) || os(visionOS)
+            Button("Open Settings") {
+                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+            }
+        #endif
     }
 }
 
@@ -75,11 +75,11 @@ private struct RemoteLoggerNoAuthView: View {
                 )
                 .padding(.top, 8)
         }
-#if os(iOS) || os(visionOS)
-        Button("Copy Contents") {
-            UXPasteboard.general.string = plistContents
-        }
-#endif
+        #if os(iOS) || os(visionOS)
+            Button("Copy Contents") {
+                UXPasteboard.general.string = plistContents
+            }
+        #endif
     }
 }
 
@@ -93,17 +93,17 @@ private let plistContents = """
 """
 
 #if DEBUG
-@available(iOS 15, visionOS 1.0, *)
-struct Previews_RemoteLoggerNoAuthView_Previews: PreviewProvider {
-    static var previews: some View {
-        Form {
-            Section {
-                RemoteLoggerPolicyDeniedView()
-            }
-            Section {
-                RemoteLoggerNoAuthView()
+    @available(iOS 15, visionOS 1.0, *)
+    struct Previews_RemoteLoggerNoAuthView_Previews: PreviewProvider {
+        static var previews: some View {
+            Form {
+                Section {
+                    RemoteLoggerPolicyDeniedView()
+                }
+                Section {
+                    RemoteLoggerNoAuthView()
+                }
             }
         }
     }
-}
 #endif

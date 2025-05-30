@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
@@ -25,7 +25,7 @@ public final class URLSessionProxy: URLSessionProtocol, @unchecked Sendable {
     /// - parameter logger: A custom logger to use instead of ``NetworkLogger/shared``.
     public convenience init(
         configuration: URLSessionConfiguration,
-        logger: NetworkLogger? = nil,
+        logger _: NetworkLogger? = nil,
         options: Options = .init()
     ) {
         self.init(configuration: configuration, delegate: nil, delegateQueue: nil, options: options)
@@ -42,13 +42,13 @@ public final class URLSessionProxy: URLSessionProtocol, @unchecked Sendable {
         if options.isMockingEnabled {
             configuration.protocolClasses = [MockingURLProtocol.self] + (configuration.protocolClasses ?? [])
         }
-        self.session = Foundation.URLSession(
+        session = Foundation.URLSession(
             configuration: configuration,
             delegate: URLSessionProxyDelegate(logger: logger, delegate: delegate),
             delegateQueue: delegateQueue
         )
         self.options = options
-        self._logger = logger
+        _logger = logger
     }
 
     // MARK: - URLSessionProtocol (Core)

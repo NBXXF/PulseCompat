@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 import Network
@@ -37,10 +37,9 @@ extension RemoteLogger {
         let session: LoggerStore.Session? // Added: 3.5.7
     }
 
-    struct Empty: Codable {
-    }
+    struct Empty: Codable {}
 
-    struct PacketNetworkMessage {
+    enum PacketNetworkMessage {
         private struct Manifest: Codable {
             let messageSize: UInt32
             let requestBodySize: UInt32
@@ -122,10 +121,10 @@ extension RemoteLogger {
 
             init?(_ data: Data) {
                 guard data.count >= headerSize else { return nil }
-                self.id = UInt32(data.from(0, size: 4))
-                self.options = Options(rawValue: data[4])
-                self.pathSize = UInt32(data.from(5, size: 4))
-                self.dataSize = UInt32(data.from(9, size: 4))
+                id = UInt32(data.from(0, size: 4))
+                options = Options(rawValue: data[4])
+                pathSize = UInt32(data.from(5, size: 4))
+                dataSize = UInt32(data.from(9, size: 4))
             }
         }
 
@@ -218,7 +217,8 @@ struct URLSessionMock: Hashable, Codable {
 
     func isMatch(_ request: URLRequest) -> Bool {
         if let lhs = request.httpMethod, let rhs = method,
-           lhs.uppercased() != rhs.uppercased() {
+           lhs.uppercased() != rhs.uppercased()
+        {
             return false
         }
         guard let url = request.url?.absoluteString else {
@@ -252,7 +252,7 @@ extension Data {
     }
 
     func from(_ from: Data.Index, size: Int) -> Data {
-        self[(from + startIndex)..<(from + size + startIndex)]
+        self[(from + startIndex) ..< (from + size + startIndex)]
     }
 }
 
@@ -266,9 +266,9 @@ private extension Data {
     func parseInt(size: Int) -> UInt64 {
         precondition(size > 0 && size <= 8)
         var accumulator: UInt64 = 0
-        for i in 0..<size {
+        for i in 0 ..< size {
             let shift = (size - i - 1) * 8
-            accumulator |= UInt64(self[self.startIndex + i]) << UInt64(shift)
+            accumulator |= UInt64(self[startIndex + i]) << UInt64(shift)
         }
         return accumulator
     }

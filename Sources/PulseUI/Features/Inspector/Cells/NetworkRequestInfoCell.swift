@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct NetworkRequestInfoCell: View {
     let viewModel: NetworkRequestInfoCellViewModel
@@ -31,9 +31,9 @@ final class NetworkRequestInfoCellViewModel {
     let render: () -> NSAttributedString
 
     init(task: NetworkTaskEntity, store: LoggerStore) {
-        self.httpMethod = task.httpMethod ?? "GET"
-        self.url = task.url ?? "–"
-        self.render = {
+        httpMethod = task.httpMethod ?? "GET"
+        url = task.url ?? "–"
+        render = {
             TextRenderer(options: .sharing).make {
                 $0.render(task, content: .all, store: store)
             }
@@ -41,25 +41,25 @@ final class NetworkRequestInfoCellViewModel {
     }
 
     init(transaction: NetworkTransactionMetricsEntity) {
-        self.httpMethod = transaction.request.httpMethod ?? "GET"
-        self.url = transaction.request.url ?? "–"
-        self.render = { TextRenderer(options: .sharing).make { $0.render(transaction) } }
+        httpMethod = transaction.request.httpMethod ?? "GET"
+        url = transaction.request.url ?? "–"
+        render = { TextRenderer(options: .sharing).make { $0.render(transaction) } }
     }
 }
 
 #if DEBUG
-struct NetworkRequestInfoCell_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            List {
-                ForEach(MockTask.allEntities, id: \.objectID) { task in
-                    NetworkRequestInfoCell(viewModel: .init(task: task, store: .mock))
+    struct NetworkRequestInfoCell_Previews: PreviewProvider {
+        static var previews: some View {
+            NavigationView {
+                List {
+                    ForEach(MockTask.allEntities, id: \.objectID) { task in
+                        NetworkRequestInfoCell(viewModel: .init(task: task, store: .mock))
+                    }
                 }
+                #if os(macOS)
+                .frame(width: 260)
+                #endif
             }
-#if os(macOS)
-            .frame(width: 260)
-#endif
         }
     }
-}
 #endif

@@ -1,17 +1,17 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-extension LoggerStore {
-    @frozen public enum MetadataValue {
+public extension LoggerStore {
+    @frozen enum MetadataValue {
         case string(String)
         case stringConvertible(CustomStringConvertible)
     }
 
-    public typealias Metadata = [String: MetadataValue]
+    typealias Metadata = [String: MetadataValue]
 
     // Compatible with SwiftLog.Logger.Level
-    @frozen public enum Level: Int16, CaseIterable, Codable, Hashable, Sendable, RawRepresentable, Comparable, CustomStringConvertible {
+    @frozen enum Level: Int16, CaseIterable, Codable, Hashable, Sendable, RawRepresentable, Comparable, CustomStringConvertible {
         case trace = 1
         case debug = 2
         case info = 3

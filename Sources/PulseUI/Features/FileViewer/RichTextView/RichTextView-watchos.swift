@@ -1,49 +1,49 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 #if os(watchOS) || os(tvOS)
 
-struct RichTextView: View {
-    let viewModel: RichTextViewModel
+    struct RichTextView: View {
+        let viewModel: RichTextViewModel
 
-    var body: some View {
-        ScrollView {
-            if let string = viewModel.attributedString {
-                Text(string)
-            } else {
-                Text(viewModel.text)
+        var body: some View {
+            ScrollView {
+                if let string = viewModel.attributedString {
+                    Text(string)
+                } else {
+                    Text(viewModel.text)
+                }
             }
-        }
-#if os(watchOS)
-        .toolbar {
-            if #available(watchOS 9.0, *) {
-                ShareLink(item: viewModel.text)
+            #if os(watchOS)
+            .toolbar {
+                if #available(watchOS 9.0, *) {
+                    ShareLink(item: viewModel.text)
+                }
             }
+            #endif
         }
-#endif
-    }
-}
-
-final class RichTextViewModel: ObservableObject {
-    let text: String
-    let attributedString: AttributedString?
-
-    var isLinkDetectionEnabled = true
-    var isEmpty: Bool { text.isEmpty }
-
-    init(string: String) {
-        self.text = string
-        self.attributedString = nil
     }
 
-    init(string: NSAttributedString, contentType: NetworkLogger.ContentType? = nil) {
-        self.attributedString = try? AttributedString(string, including: \.uiKit)
-        self.text = string.string
+    final class RichTextViewModel: ObservableObject {
+        let text: String
+        let attributedString: AttributedString?
+
+        var isLinkDetectionEnabled = true
+        var isEmpty: Bool { text.isEmpty }
+
+        init(string: String) {
+            text = string
+            attributedString = nil
+        }
+
+        init(string: NSAttributedString, contentType _: NetworkLogger.ContentType? = nil) {
+            attributedString = try? AttributedString(string, including: \.uiKit)
+            text = string.string
+        }
     }
-}
 
 #endif

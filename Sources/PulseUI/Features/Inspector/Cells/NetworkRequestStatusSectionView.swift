@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct NetworkRequestStatusSectionView: View {
@@ -34,29 +34,29 @@ final class NetworkRequestStatusSectionViewModel {
     let errorDetailsViewModel: KeyValueSectionViewModel?
 
     init(task: NetworkTaskEntity, store: LoggerStore) {
-        self.status = NetworkRequestStatusCellModel(task: task, store: store)
-        self.errorDescription = task.state == .failure ? task.errorDebugDescription : nil
-        self.requestViewModel = NetworkRequestInfoCellViewModel(task: task, store: store)
-        self.errorDetailsViewModel = KeyValueSectionViewModel.makeErrorDetails(for: task)
+        status = NetworkRequestStatusCellModel(task: task, store: store)
+        errorDescription = task.state == .failure ? task.errorDebugDescription : nil
+        requestViewModel = NetworkRequestInfoCellViewModel(task: task, store: store)
+        errorDetailsViewModel = KeyValueSectionViewModel.makeErrorDetails(for: task)
     }
 }
 
 #if DEBUG
-@available(iOS 15, visionOS 1.0, *)
-struct NetworkRequestStatusSectionView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            List {
-                ForEach(MockTask.allEntities, id: \.objectID) { task in
-                    Section {
-                        NetworkRequestStatusSectionView(viewModel: .init(task: task, store: .mock))
+    @available(iOS 15, visionOS 1.0, *)
+    struct NetworkRequestStatusSectionView_Previews: PreviewProvider {
+        static var previews: some View {
+            NavigationView {
+                List {
+                    ForEach(MockTask.allEntities, id: \.objectID) { task in
+                        Section {
+                            NetworkRequestStatusSectionView(viewModel: .init(task: task, store: .mock))
+                        }
                     }
                 }
+                #if os(macOS)
+                .frame(width: 260)
+                #endif
             }
-#if os(macOS)
-            .frame(width: 260)
-#endif
         }
     }
-}
 #endif

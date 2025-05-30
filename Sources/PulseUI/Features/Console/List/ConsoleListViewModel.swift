@@ -1,19 +1,19 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import CoreData
-import Pulse
 import Combine
+import CoreData
+import Foundation
+import Pulse
 import SwiftUI
 
 final class ConsoleListViewModel: ConsoleDataSourceDelegate, ObservableObject, ConsoleEntitiesSource {
-#if os(iOS) || os(visionOS) || os(macOS)
-    @Published private(set) var visibleEntities: ArraySlice<NSManagedObject> = []
-#else
-    var visibleEntities: [NSManagedObject] { entities }
-#endif
+    #if os(iOS) || os(visionOS) || os(macOS)
+        @Published private(set) var visibleEntities: ArraySlice<NSManagedObject> = []
+    #else
+        var visibleEntities: [NSManagedObject] { entities }
+    #endif
     @Published private(set) var entities: [NSManagedObject] = []
     @Published private(set) var sections: [NSFetchedResultsSectionInfo]?
 
@@ -34,12 +34,12 @@ final class ConsoleListViewModel: ConsoleDataSourceDelegate, ObservableObject, C
 
     let events = PassthroughSubject<ConsoleUpdateEvent, Never>()
 
-#if os(iOS) || os(visionOS) || os(macOS)
-    /// This exist strictly to workaround List performance issues
-    private var scrollPosition: ScrollPosition = .nearTop
-    private var visibleEntityCountLimit = ConsoleDataSource.fetchBatchSize
-    private var visibleObjectIDs: Set<NSManagedObjectID> = []
-#endif
+    #if os(iOS) || os(visionOS) || os(macOS)
+        /// This exist strictly to workaround List performance issues
+        private var scrollPosition: ScrollPosition = .nearTop
+        private var visibleEntityCountLimit = ConsoleDataSource.fetchBatchSize
+        private var visibleObjectIDs: Set<NSManagedObjectID> = []
+    #endif
 
     private let store: LoggerStore
     private let environment: ConsoleEnvironment
@@ -50,11 +50,11 @@ final class ConsoleListViewModel: ConsoleDataSourceDelegate, ObservableObject, C
     private var filtersCancellable: AnyCancellable?
 
     init(environment: ConsoleEnvironment, filters: ConsoleFiltersViewModel) {
-        self.store = environment.store
+        store = environment.store
         self.environment = environment
-        self.mode = environment.mode
+        mode = environment.mode
         self.filters = filters
-        self.sessions = .sessions(for: store.viewContext)
+        sessions = .sessions(for: store.viewContext)
 
         $entities.sink { [weak self] in
             self?.filters.entities.send($0)
@@ -90,7 +90,7 @@ final class ConsoleListViewModel: ConsoleDataSourceDelegate, ObservableObject, C
 
     func buttonShowPreviousSessionTapped(for session: LoggerSessionEntity) {
         filters.criteria.shared.sessions.selection.insert(session.id)
-        refreshPreviousSessionButton(sessions: self.sessions.objects)
+        refreshPreviousSessionButton(sessions: sessions.objects)
     }
 
     private func refreshPreviousSessionButton(sessions: [LoggerSessionEntity]) {
@@ -99,7 +99,8 @@ final class ConsoleListViewModel: ConsoleDataSourceDelegate, ObservableObject, C
             selection.contains($0.id)
         }
         guard isDisplayingPrefix,
-              sessions.count > selection.count else {
+              sessions.count > selection.count
+        else {
             previousSession = nil
             return
         }
@@ -112,77 +113,77 @@ final class ConsoleListViewModel: ConsoleDataSourceDelegate, ObservableObject, C
         guard isViewVisible else { return }
 
         entities = dataSource.entities
-#if os(iOS) || os(visionOS) || os(macOS)
-        refreshVisibleEntities()
-#endif
+        #if os(iOS) || os(visionOS) || os(macOS)
+            refreshVisibleEntities()
+        #endif
         events.send(.refresh)
     }
 
     func dataSource(_ dataSource: ConsoleDataSource, didUpdateWith diff: CollectionDifference<NSManagedObjectID>?) {
         entities = dataSource.entities
-#if os(iOS) || os(visionOS) || os(macOS)
-        if scrollPosition == .nearTop {
-            refreshVisibleEntities()
-        }
-#endif
+        #if os(iOS) || os(visionOS) || os(macOS)
+            if scrollPosition == .nearTop {
+                refreshVisibleEntities()
+            }
+        #endif
         events.send(.update(diff))
     }
 
     // MARK: Visible Entities
 
-#if os(iOS) || os(visionOS) || os(macOS)
-    private enum ScrollPosition {
-        case nearTop
-        case middle
-        case nearBottom
-    }
-
-    func onDisappearCell(with objectID: NSManagedObjectID) {
-        visibleObjectIDs.remove(objectID)
-        refreshScrollPosition()
-    }
-
-    func onAppearCell(with objectID: NSManagedObjectID) {
-        visibleObjectIDs.insert(objectID)
-        refreshScrollPosition()
-    }
-
-    private func refreshScrollPosition() {
-        let scrollPosition: ScrollPosition
-        if visibleObjectIDs.isEmpty || visibleEntities.prefix(5).map(\.objectID).contains(where: visibleObjectIDs.contains) {
-            scrollPosition = .nearTop
-        } else if visibleEntities.suffix(5).map(\.objectID).contains(where: visibleObjectIDs.contains) {
-            scrollPosition = .nearBottom
-        } else {
-            scrollPosition = .middle
+    #if os(iOS) || os(visionOS) || os(macOS)
+        private enum ScrollPosition {
+            case nearTop
+            case middle
+            case nearBottom
         }
 
-        guard scrollPosition != self.scrollPosition else {
-            return
+        func onDisappearCell(with objectID: NSManagedObjectID) {
+            visibleObjectIDs.remove(objectID)
+            refreshScrollPosition()
         }
-        self.scrollPosition = scrollPosition
-        switch scrollPosition {
-        case .nearTop:
-            DispatchQueue.main.async {
-                // Important: when we push a new screens all cells disappear
-                // and the state transitions to .nearTop. We don't want the
-                // view to reload when that happens.
-                if self.isViewVisible {
-                    self.refreshVisibleEntities()
+
+        func onAppearCell(with objectID: NSManagedObjectID) {
+            visibleObjectIDs.insert(objectID)
+            refreshScrollPosition()
+        }
+
+        private func refreshScrollPosition() {
+            let scrollPosition: ScrollPosition
+            if visibleObjectIDs.isEmpty || visibleEntities.prefix(5).map(\.objectID).contains(where: visibleObjectIDs.contains) {
+                scrollPosition = .nearTop
+            } else if visibleEntities.suffix(5).map(\.objectID).contains(where: visibleObjectIDs.contains) {
+                scrollPosition = .nearBottom
+            } else {
+                scrollPosition = .middle
+            }
+
+            guard scrollPosition != self.scrollPosition else {
+                return
+            }
+            self.scrollPosition = scrollPosition
+            switch scrollPosition {
+            case .nearTop:
+                DispatchQueue.main.async {
+                    // Important: when we push a new screens all cells disappear
+                    // and the state transitions to .nearTop. We don't want the
+                    // view to reload when that happens.
+                    if self.isViewVisible {
+                        self.refreshVisibleEntities()
+                    }
+                }
+            case .middle:
+                break // Don't reload: too expensive and ruins gestures
+            case .nearBottom:
+                if visibleEntities.count < entities.count {
+                    visibleEntityCountLimit += ConsoleDataSource.fetchBatchSize
+                    refreshVisibleEntities()
                 }
             }
-        case .middle:
-            break // Don't reload: too expensive and ruins gestures
-        case .nearBottom:
-            if visibleEntities.count < entities.count {
-                visibleEntityCountLimit += ConsoleDataSource.fetchBatchSize
-                refreshVisibleEntities()
-            }
         }
-    }
 
-    private func refreshVisibleEntities() {
-        visibleEntities = entities.prefix(visibleEntityCountLimit)
-    }
-#endif
+        private func refreshVisibleEntities() {
+            visibleEntities = entities.prefix(visibleEntityCountLimit)
+        }
+    #endif
 }

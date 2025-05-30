@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import Combine
 import CoreData
 import Pulse
-import Combine
 import SwiftUI
 
 @available(iOS 15, macOS 13, visionOS 1.0, *)
@@ -26,10 +26,10 @@ struct ConsoleListContentView: View {
                 let objectID = entity.objectID
                 ConsoleEntityCell(entity: entity)
                     .id(objectID)
-#if os(iOS) || os(visionOS) || os(macOS)
+                #if os(iOS) || os(visionOS) || os(macOS)
                     .onAppear { viewModel.onAppearCell(with: objectID) }
                     .onDisappear { viewModel.onDisappearCell(with: objectID) }
-#endif
+                #endif
             }
         }
         footerView
@@ -48,26 +48,26 @@ struct ConsoleListContentView: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
-#if os(iOS) || os(visionOS)
-            .listRowSeparator(.hidden, edges: .bottom)
-#endif
+            #if os(iOS) || os(visionOS)
+                .listRowSeparator(.hidden, edges: .bottom)
+            #endif
         }
     }
 }
 
 #if os(iOS) || os(macOS) || os(visionOS)
-@available(iOS 15, macOS 13, visionOS 1.0, *)
-struct ConsoleStaticList: View {
-    let entities: [NSManagedObject]
+    @available(iOS 15, macOS 13, visionOS 1.0, *)
+    struct ConsoleStaticList: View {
+        let entities: [NSManagedObject]
 
-    var body: some View {
-        List {
-            ForEach(entities, id: \.objectID, content: Components.makeConsoleEntityCell)
+        var body: some View {
+            List {
+                ForEach(entities, id: \.objectID, content: Components.makeConsoleEntityCell)
+            }
+            .listStyle(.plain)
+            #if os(iOS) || os(visionOS)
+                .environment(\.defaultMinListRowHeight, 8)
+            #endif
         }
-        .listStyle(.plain)
-#if os(iOS) || os(visionOS)
-        .environment(\.defaultMinListRowHeight, 8)
-#endif
     }
-}
 #endif

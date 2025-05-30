@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-extension LoggerStore {
+public extension LoggerStore {
     /// A semantic version.
-    public struct Version: Comparable, LosslessStringConvertible, Codable, Sendable {
+    struct Version: Comparable, LosslessStringConvertible, Codable, Sendable {
         public let major: Int
         public let minor: Int
         public let patch: Int
@@ -41,7 +41,8 @@ extension LoggerStore {
             guard components.count == 3,
                   let major = Int(components[0]),
                   let minor = Int(components[1]),
-                  let patch = Int(components[2]) else {
+                  let patch = Int(components[2])
+            else {
                 return nil
             }
             self.major = major
@@ -57,7 +58,7 @@ extension LoggerStore {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.singleValueContainer()
-            guard let version = Version(try container.decode(String.self)) else {
+            guard let version = try Version(container.decode(String.self)) else {
                 throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid version number format")
             }
             self = version
@@ -65,7 +66,7 @@ extension LoggerStore {
 
         public func encode(to encoder: Encoder) throws {
             var container = encoder.singleValueContainer()
-            try container.encode(self.description)
+            try container.encode(description)
         }
     }
 }

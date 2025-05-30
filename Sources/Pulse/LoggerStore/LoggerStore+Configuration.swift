@@ -1,15 +1,14 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 
-extension LoggerStore {
-
+public extension LoggerStore {
     /// The store creation options.
-    public struct Options: OptionSet, Sendable {
+    struct Options: OptionSet, Sendable {
         public let rawValue: Int
 
         public init(rawValue: Int) {
@@ -49,7 +48,7 @@ extension LoggerStore {
     }
 
     /// The store configuration.
-    public struct Configuration: @unchecked Sendable {
+    struct Configuration: @unchecked Sendable {
         /// Size limit in bytes. `256 MB` by default.
         public var sizeLimit: Int64
 
@@ -76,7 +75,7 @@ extension LoggerStore {
 
         /// Limit the maximum response size stored by the logger. The default
         /// value is `8 MB`. The same limit applies to requests.
-        public var responseBodySizeLimit: Int = 8 * 1048576
+        public var responseBodySizeLimit: Int = 8 * 1_048_576
 
         var inlineLimit = 16384 // 16 KB
 

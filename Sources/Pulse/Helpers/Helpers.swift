@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import CoreData
 import CommonCrypto
+import CoreData
+import Foundation
 
 var Files: FileManager { FileManager.default }
 
@@ -34,14 +34,14 @@ extension URL {
     }
 
     static var logs: URL {
-#if os(tvOS)
-        let searchPath = FileManager.SearchPathDirectory.cachesDirectory
-#else
-        let searchPath = FileManager.SearchPathDirectory.libraryDirectory
-#endif
+        #if os(tvOS)
+            let searchPath = FileManager.SearchPathDirectory.cachesDirectory
+        #else
+            let searchPath = FileManager.SearchPathDirectory.libraryDirectory
+        #endif
         var url = Files.urls(for: searchPath, in: .userDomainMask).first?
             .appending(directory: "Logs")
-            .appending(directory: "com.github.kean.logger")  ?? URL(fileURLWithPath: "/dev/null")
+            .appending(directory: "com.github.kean.logger") ?? URL(fileURLWithPath: "/dev/null")
         if !Files.createDirectoryIfNeeded(at: url) {
             var resourceValues = URLResourceValues()
             resourceValues.isExcludedFromBackup = true
@@ -73,10 +73,10 @@ extension Data {
 
 extension URLRequest {
     func httpBodyStreamData() -> Data? {
-        guard let bodyStream = self.httpBodyStream else {
+        guard let bodyStream = httpBodyStream else {
             return nil
         }
-        let bufferSize: Int = 1024
+        let bufferSize = 1024
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
 
         bodyStream.open()
@@ -104,10 +104,10 @@ extension URL {
     }
 
     func getHost() -> String? {
-        if let host = self.host {
+        if let host = host {
             return host
         }
-        if self.scheme == nil, let url = URL(string: "https://" + self.absoluteString) {
+        if scheme == nil, let url = URL(string: "https://" + absoluteString) {
             return url.host ?? "" // URL(string: "example.com")?.host with not scheme returns host: ""
         }
         return nil
@@ -118,7 +118,7 @@ struct LoggerBlogDataStore {
     let getDecompressedData: (LoggerBlobHandleEntity) -> Data?
 
     init(_ store: LoggerStore) {
-        self.getDecompressedData = { [weak store] in
+        getDecompressedData = { [weak store] in
             store?.getDecompressedData(for: $0)
         }
     }

@@ -1,21 +1,23 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
 #if !os(macOS)
-import UIKit.UIImage
-/// Alias for `UIImage`.
-typealias PlatformImage = UIImage
+    import UIKit.UIImage
+
+    /// Alias for `UIImage`.
+    typealias PlatformImage = UIImage
 #else
-import AppKit.NSImage
-/// Alias for `NSImage`.
-typealias PlatformImage = NSImage
+    import AppKit.NSImage
+
+    /// Alias for `NSImage`.
+    typealias PlatformImage = NSImage
 #endif
 
 #if os(watchOS)
-import ImageIO
+    import ImageIO
 #endif
 
 enum Graphics {
@@ -28,7 +30,8 @@ enum Graphics {
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailFromImageIfAbsent: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: targetSize] as [CFString: Any]
+            kCGImageSourceThumbnailMaxPixelSize: targetSize,
+        ] as [CFString: Any]
         guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             return nil
         }
@@ -40,16 +43,16 @@ enum Graphics {
             return nil
         }
         let data = NSMutableData()
-#if os(watchOS)
-        let type: String = "public.jpeg"
-#else
-        let type: String = "public.heic"
-#endif
+        #if os(watchOS)
+            let type = "public.jpeg"
+        #else
+            let type = "public.heic"
+        #endif
         guard let destination = CGImageDestinationCreateWithData(data as CFMutableData, type as CFString, 1, nil) else {
             return nil
         }
         let options: NSDictionary = [
-            kCGImageDestinationLossyCompressionQuality: 0.33
+            kCGImageDestinationLossyCompressionQuality: 0.33,
         ]
         CGImageDestinationAddImage(destination, source, options)
         CGImageDestinationFinalize(destination)
@@ -63,19 +66,19 @@ enum Graphics {
         }
         return [
             "ResponsePixelWidth": String(Int(image.size.width)),
-            "ResponsePixelHeight": String(Int(image.size.height))
+            "ResponsePixelHeight": String(Int(image.size.height)),
         ]
     }
 }
 
 #if os(macOS)
-extension NSImage {
-    var cgImage: CGImage? {
-        cgImage(forProposedRect: nil, context: nil, hints: nil)
-    }
+    extension NSImage {
+        var cgImage: CGImage? {
+            cgImage(forProposedRect: nil, context: nil, hints: nil)
+        }
 
-    convenience init(cgImage: CGImage) {
-        self.init(cgImage: cgImage, size: .zero)
+        convenience init(cgImage: CGImage) {
+            self.init(cgImage: cgImage, size: .zero)
+        }
     }
-}
 #endif

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 import Pulse
@@ -259,8 +259,8 @@ extension HARDocument.Entry.Cache {
 
 // MARK: - Helper Methods
 
-extension HARDocument.Timings {
-    fileprivate static func millisecondsBetween(startDate: Date?, endDate: Date?) -> Int {
+private extension HARDocument.Timings {
+    static func millisecondsBetween(startDate: Date?, endDate: Date?) -> Int {
         let timeInterval = intervalBetween(startDate: startDate, endDate: endDate)
         guard timeInterval != .zero else {
             // return -1 if value can not be determined as indicated on HAR document specs.
@@ -269,7 +269,7 @@ extension HARDocument.Timings {
         return Int(timeInterval * 1000)
     }
 
-    fileprivate static func intervalBetween(startDate: Date?, endDate: Date?) -> TimeInterval {
+    static func intervalBetween(startDate: Date?, endDate: Date?) -> TimeInterval {
         guard let startDate, let endDate else {
             return .zero
         }

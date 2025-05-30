@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct NetworkResponseBodyCell: View {
@@ -34,8 +34,8 @@ struct NetworkResponseBodyCellViewModel {
 
     init(task: NetworkTaskEntity) {
         let size = task.responseBodySize
-        self.details = size > 0 ? ByteCountFormatter.string(fromByteCount: size) : "Empty"
-        self.isEnabled = size > 0
-        self.detailsViewModel = NetworkInspectorResponseBodyViewModel(task: task)
+        details = size > 0 ? ByteCountFormatter.string(fromByteCount: size) : "Empty"
+        isEnabled = size > 0
+        detailsViewModel = NetworkInspectorResponseBodyViewModel(task: task)
     }
 }

@@ -1,18 +1,18 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct NetworkInspectorResponseBodyView: View {
     let viewModel: NetworkInspectorResponseBodyViewModel
 
     var body: some View {
         contents
-#if !os(macOS)
-            .inlineNavigationTitle("Response Body")
-#endif
+        #if !os(macOS)
+        .inlineNavigationTitle("Response Body")
+        #endif
     }
 
     @ViewBuilder

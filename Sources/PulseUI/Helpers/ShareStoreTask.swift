@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import CoreData
 import Foundation
 import Pulse
-import CoreData
 import SwiftUI
 
 final class ShareStoreTask {
@@ -17,10 +17,10 @@ final class ShareStoreTask {
     private var completion: ((ShareItems?) -> Void)?
 
     init(entities: [NSManagedObject], store: LoggerStore, output: ShareOutput, completion: @escaping (ShareItems?) -> Void) {
-        self.objectIDs = entities.map(\.objectID)
+        objectIDs = entities.map(\.objectID)
         self.store = store
         self.output = output
-        self.context = store.backgroundContext
+        context = store.backgroundContext
         self.completion = completion
     }
 
@@ -51,7 +51,7 @@ final class ShareStoreTask {
             }
         } else {
             let items = ShareService.share(string, as: output)
-            self.didComplete(with: items)
+            didComplete(with: items)
         }
     }
 
@@ -67,7 +67,8 @@ final class ShareStoreTask {
         case .har:
             guard let file = try? HARDocument(store: store),
                   let encoded = try? JSONEncoder().encode(file),
-                  let string = try? NSAttributedString(data: encoded, documentAttributes: nil) else {
+                  let string = try? NSAttributedString(data: encoded, documentAttributes: nil)
+            else {
                 return NSAttributedString(string: "")
             }
             return string
@@ -80,9 +81,9 @@ final class ShareStoreTask {
                     continue
                 }
                 switch LoggerEntity(entity) {
-                case .message(let message):
+                case let .message(message):
                     renderer.render(message)
-                case .task(let task):
+                case let .task(task):
                     renderer.render(task, content: content, store: store)
                 }
                 if index < objectIDs.endIndex - 1 {
@@ -127,7 +128,7 @@ final class ShareStoreTask {
             let start = index * indices.count / iterations
             let end = (index + 1) * indices.count / iterations
 
-            for index in start..<end {
+            for index in start ..< end {
                 let job = queue[index]
                 guard let data = job.value.data() else { continue }
                 let string = TextRenderer(options: .sharing).render(data, contentType: job.value.contentType, error: job.value.error)

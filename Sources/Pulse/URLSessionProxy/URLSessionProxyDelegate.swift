@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
@@ -21,9 +21,9 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
     /// - parameter logger: By default, uses a shared logger
     /// - parameter delegate: The "actual" session delegate, strongly retained.
     public init(logger: NetworkLogger? = nil, delegate: URLSessionDelegate? = nil) {
-        self.actualDelegate = delegate
-        self.taskDelegate = delegate as? URLSessionTaskDelegate
-        self._logger = logger
+        actualDelegate = delegate
+        taskDelegate = delegate as? URLSessionTaskDelegate
+        _logger = logger
 
         var interceptedSelectors: Set = [
             #selector(URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)),
@@ -31,7 +31,7 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
             #selector(URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)),
             #selector(URLSessionTaskDelegate.urlSession(_:task:didSendBodyData:totalBytesSent:totalBytesExpectedToSend:)),
             #selector(URLSessionDownloadDelegate.urlSession(_:downloadTask:didFinishDownloadingTo:)),
-            #selector(URLSessionDownloadDelegate.urlSession(_:downloadTask:didWriteData:totalBytesWritten:totalBytesExpectedToWrite:))
+            #selector(URLSessionDownloadDelegate.urlSession(_:downloadTask:didWriteData:totalBytesWritten:totalBytesExpectedToWrite:)),
         ]
         if #available(iOS 16.0, tvOS 16.0, macOS 13.0, watchOS 9.0, *) {
             interceptedSelectors.insert(#selector(URLSessionTaskDelegate.urlSession(_:didCreateTask:)))
@@ -88,14 +88,14 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
 
     // MARK: Proxy
 
-    public override func responds(to aSelector: Selector!) -> Bool {
+    override public func responds(to aSelector: Selector!) -> Bool {
         if interceptedSelectors.contains(aSelector) {
             return true
         }
         return (actualDelegate?.responds(to: aSelector) ?? false) || super.responds(to: aSelector)
     }
 
-    public override func forwardingTarget(for selector: Selector!) -> Any? {
+    override public func forwardingTarget(for selector: Selector!) -> Any? {
         interceptedSelectors.contains(selector) ? nil : actualDelegate
     }
 }

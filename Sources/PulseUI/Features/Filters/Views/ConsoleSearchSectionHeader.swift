@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import SwiftUI
 
@@ -18,53 +18,54 @@ struct ConsoleSectionHeader: View {
     ) {
         self.icon = icon
         self.title = title
-        self.reset = { filter.wrappedValue = `default` ?? Filter() }
-        self.isDefault = filter.wrappedValue == `default` ?? Filter()
+        reset = { filter.wrappedValue = `default` ?? Filter() }
+        isDefault = filter.wrappedValue == `default` ?? Filter()
     }
 
-#if os(macOS)
-    var body: some View {
-        HStack {
-            HStack(spacing: 4) {
-                Image(systemName: icon)
+    #if os(macOS)
+        var body: some View {
+            HStack {
+                HStack(spacing: 4) {
+                    Image(systemName: icon)
+                        .foregroundColor(.secondary)
+                    Text(title)
+                        .lineLimit(1)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+                if !isDefault {
+                    Button(action: reset) {
+                        Image(systemName: "arrow.uturn.left")
+                    }
                     .foregroundColor(.secondary)
+                    .disabled(isDefault)
+                }
+            }.buttonStyle(.plain)
+        }
+
+    #elseif os(iOS) || os(visionOS)
+        var body: some View {
+            HStack {
                 Text(title)
-                    .lineLimit(1)
-                    .font(.headline)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
-            if !isDefault {
-                Button(action: reset) {
-                    Image(systemName: "arrow.uturn.left")
+                if !isDefault {
+                    Button(action: reset) {
+                        Image(systemName: "arrow.uturn.left")
+                    }
+                    .padding(.bottom, 3)
+                } else {
+                    Button(action: {}) {
+                        Image(systemName: "arrow.uturn.left")
+                    }
+                    .padding(.bottom, 3)
+                    .hidden()
+                    .accessibilityHidden(true)
                 }
-                .foregroundColor(.secondary)
-                .disabled(isDefault)
-            }
-        }.buttonStyle(.plain)
-    }
-#elseif os(iOS) || os(visionOS)
-    var body: some View {
-        HStack {
-            Text(title)
-            if !isDefault {
-                Button(action: reset) {
-                    Image(systemName: "arrow.uturn.left")
-                }
-                .padding(.bottom, 3)
-            } else {
-                Button(action: {}) {
-                    Image(systemName: "arrow.uturn.left")
-                }
-                .padding(.bottom, 3)
-                .hidden()
-                .accessibilityHidden(true)
             }
         }
-    }
-#else
-    var body: some View {
-        Text(title)
-    }
-#endif
+    #else
+        var body: some View {
+            Text(title)
+        }
+    #endif
 }

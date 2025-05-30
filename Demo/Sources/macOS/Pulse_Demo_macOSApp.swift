@@ -2,8 +2,8 @@
 //
 // Copyright (c) 2020-2023 Alexander Grebenyuk (github.com/kean).
 
-import SwiftUI
 import PulseUI
+import SwiftUI
 
 @main
 struct Pulse_Demo_macOSApp: App {

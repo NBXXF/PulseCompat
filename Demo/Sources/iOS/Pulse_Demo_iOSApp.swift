@@ -2,10 +2,10 @@
 //
 // Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
 
-import SwiftUI
 import Pulse
-import PulseUI
 import PulseProxy
+import PulseUI
+import SwiftUI
 
 @main
 struct PulseDemo_iOS: App {
@@ -33,9 +33,8 @@ private final class AppViewModel: ObservableObject {
     }
 }
 
-
 private func sendRequest() {
-     // testClosures()
+    // testClosures()
     // testSwiftConcurrency()
 }
 
@@ -71,15 +70,15 @@ private func testSwiftConcurrency() {
 }
 
 private final class DemoSessionDelegate: NSObject, URLSessionDelegate, URLSessionDataDelegate {
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    func urlSession(_: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         NSLog("[\(dataTask.taskIdentifier)] didReceive: \(data.count)")
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+    func urlSession(_: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         NSLog("[\(task.taskIdentifier)] didFinishCollectingMetrics: \(metrics)")
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
+    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
         NSLog("[\(task.taskIdentifier)] didCompleteWithError: \(String(describing: error))")
     }
 }

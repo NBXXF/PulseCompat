@@ -1,158 +1,158 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import Combine
+import CoreData
 import Foundation
 import Pulse
 import SwiftUI
-import CoreData
-import Combine
 
 #if os(iOS) || os(macOS) || os(visionOS)
 
-@available(iOS 15, macOS 13, visionOS 1.0, *)
-struct SessionListView: View {
-    @Binding var selection: Set<UUID>
-    @Binding var sharedSessions: SelectedSessionsIDs?
+    @available(iOS 15, macOS 13, visionOS 1.0, *)
+    struct SessionListView: View {
+        @Binding var selection: Set<UUID>
+        @Binding var sharedSessions: SelectedSessionsIDs?
 
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \LoggerSessionEntity.createdAt, ascending: false)])
-    private var sessions: FetchedResults<LoggerSessionEntity>
+        @FetchRequest(sortDescriptors: [NSSortDescriptor(keyPath: \LoggerSessionEntity.createdAt, ascending: false)])
+        private var sessions: FetchedResults<LoggerSessionEntity>
 
-    @State private var filterTerm = ""
-    @State private var groupedSessions: [(Date, [LoggerSessionEntity])] = []
+        @State private var filterTerm = ""
+        @State private var groupedSessions: [(Date, [LoggerSessionEntity])] = []
 
-#if os(iOS) || os(visionOS)
-    @Environment(\.editMode) private var editMode
-#endif
-    @Environment(\.store) private var store
+        #if os(iOS) || os(visionOS)
+            @Environment(\.editMode) private var editMode
+        #endif
+        @Environment(\.store) private var store
 
-    var body: some View {
-        VStack(spacing: 0) {
-            if sessions.isEmpty {
-                Text("No Recorded Sessions")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .foregroundColor(.secondary)
-            } else {
-                content
-                    .onAppear { refreshGroups() }
-                    .onChange(of: sessions.count) { _ in refreshGroups() }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var content: some View {
-#if os(macOS)
-        VStack(spacing: 0) {
-            list
-
-            Divider()
-            SearchBar(title: "Filter", imageName: "line.3.horizontal.decrease.circle", text: $filterTerm)
-                .help("Show sessions with matching name")
-                .padding(8)
-        }
-#else
-        list
-#endif
-    }
-
-    private func refreshGroups() {
-        let calendar = Calendar.current
-        let groups = Dictionary(grouping: sessions) {
-            let components = calendar.dateComponents([.day, .year, .month], from: $0.createdAt)
-            return calendar.date(from: components) ?? $0.createdAt
-        }
-        self.groupedSessions = Array(groups.sorted(by: { $0.key > $1.key }))
-    }
-
-    private var list: some View {
-        List(selection: $selection) {
-            if !filterTerm.isEmpty {
-                ForEach(getFilteredSessions(), id: \.id, content: makeCell)
-            } else {
-                ForEach(groupedSessions, id: \.0) { group in
-                    Section(header: makeHeader(for: group.0, sessions: group.1)) {
-                        ForEach(group.1, id: \.id, content: makeCell)
-                    }
+        var body: some View {
+            VStack(spacing: 0) {
+                if sessions.isEmpty {
+                    Text("No Recorded Sessions")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .foregroundColor(.secondary)
+                } else {
+                    content
+                        .onAppear { refreshGroups() }
+                        .onChange(of: sessions.count) { _ in refreshGroups() }
                 }
             }
         }
-#if os(iOS) || os(visionOS)
-        .listStyle(.plain)
-        .searchable(text: $filterTerm)
-#else
-        .listStyle(.sidebar)
-#endif
-    }
 
-    private func makeHeader(for startDate: Date, sessions: [LoggerSessionEntity]) -> some View {
-        HStack {
-#if os(macOS)
-            PlainListSectionHeaderSeparator(title: sectionTitleFormatter.string(from: startDate) + " (\(sessions.count))")
-#else
-            (Text(sectionTitleFormatter.string(from: startDate)) +
-             Text(" (\(sessions.count))").foregroundColor(.secondary.opacity(0.5)))
-            .font(.headline)
-            .padding(.vertical, 6)
-#endif
+        @ViewBuilder
+        private var content: some View {
+            #if os(macOS)
+                VStack(spacing: 0) {
+                    list
 
-#if os(iOS) || os(visionOS)
-            if editMode?.wrappedValue.isEditing ?? false {
-                Spacer()
+                    Divider()
+                    SearchBar(title: "Filter", imageName: "line.3.horizontal.decrease.circle", text: $filterTerm)
+                        .help("Show sessions with matching name")
+                        .padding(8)
+                }
+            #else
+                list
+            #endif
+        }
 
-                let ids = Set(sessions.map(\.id))
-                let isAllSelected = selection.intersection(ids).count == ids.count
-                Button(isAllSelected ? "Deselect All" : "Select All") {
-                    if isAllSelected {
-                        selection.subtract(ids)
-                    } else {
-                        selection.formUnion(ids)
-                    }
-                }.font(.subheadline)
+        private func refreshGroups() {
+            let calendar = Calendar.current
+            let groups = Dictionary(grouping: sessions) {
+                let components = calendar.dateComponents([.day, .year, .month], from: $0.createdAt)
+                return calendar.date(from: components) ?? $0.createdAt
             }
-#endif
+            groupedSessions = Array(groups.sorted(by: { $0.key > $1.key }))
+        }
+
+        private var list: some View {
+            List(selection: $selection) {
+                if !filterTerm.isEmpty {
+                    ForEach(getFilteredSessions(), id: \.id, content: makeCell)
+                } else {
+                    ForEach(groupedSessions, id: \.0) { group in
+                        Section(header: makeHeader(for: group.0, sessions: group.1)) {
+                            ForEach(group.1, id: \.id, content: makeCell)
+                        }
+                    }
+                }
+            }
+            #if os(iOS) || os(visionOS)
+            .listStyle(.plain)
+            .searchable(text: $filterTerm)
+            #else
+            .listStyle(.sidebar)
+            #endif
+        }
+
+        private func makeHeader(for startDate: Date, sessions: [LoggerSessionEntity]) -> some View {
+            HStack {
+                #if os(macOS)
+                    PlainListSectionHeaderSeparator(title: sectionTitleFormatter.string(from: startDate) + " (\(sessions.count))")
+                #else
+                    (Text(sectionTitleFormatter.string(from: startDate)) +
+                        Text(" (\(sessions.count))").foregroundColor(.secondary.opacity(0.5)))
+                        .font(.headline)
+                        .padding(.vertical, 6)
+                #endif
+
+                #if os(iOS) || os(visionOS)
+                    if editMode?.wrappedValue.isEditing ?? false {
+                        Spacer()
+
+                        let ids = Set(sessions.map(\.id))
+                        let isAllSelected = selection.intersection(ids).count == ids.count
+                        Button(isAllSelected ? "Deselect All" : "Select All") {
+                            if isAllSelected {
+                                selection.subtract(ids)
+                            } else {
+                                selection.formUnion(ids)
+                            }
+                        }.font(.subheadline)
+                    }
+                #endif
+            }
+        }
+
+        @ViewBuilder
+        private func makeCell(for session: LoggerSessionEntity) -> some View {
+            ConsoleSessionCell(session: session, isCompact: filterTerm.isEmpty)
+                .swipeActions {
+                    Button(action: {
+                        if session.id != store.session.id {
+                            store.removeSessions(withIDs: [session.id])
+                        }
+                    }, label: {
+                        Label("Delete", systemImage: "trash")
+                    }).tint(Color.red)
+
+                    Button(action: { sharedSessions = .init(ids: [session.id]) }) {
+                        Label("Share", systemImage: "square.and.arrow.up.fill")
+                    }.tint(.blue)
+                }
+        }
+
+        private func getFilteredSessions() -> [LoggerSessionEntity] {
+            sessions.filter {
+                $0.searchTags.contains(where: {
+                    $0.firstRange(of: filterTerm, options: [.caseInsensitive]) != nil
+                })
+            }
         }
     }
 
-    @ViewBuilder
-    private func makeCell(for session: LoggerSessionEntity) -> some View {
-        ConsoleSessionCell(session: session, isCompact: filterTerm.isEmpty)
-            .swipeActions {
-                Button(action: {
-                    if session.id != store.session.id {
-                        store.removeSessions(withIDs: [session.id])
-                    }
-                }, label: {
-                    Label("Delete", systemImage: "trash")
-                }).tint(Color.red)
-
-                Button(action: { sharedSessions = .init(ids: [session.id]) }) {
-                    Label("Share", systemImage: "square.and.arrow.up.fill")
-                }.tint(.blue)
-            }
+    struct SelectedSessionsIDs: Hashable, Identifiable {
+        var id: SelectedSessionsIDs { self }
+        let ids: Set<UUID>
     }
 
-    private func getFilteredSessions() -> [LoggerSessionEntity] {
-        sessions.filter {
-            $0.searchTags.contains(where: {
-                $0.firstRange(of: filterTerm, options: [.caseInsensitive]) != nil
-            })
-        }
-    }
-}
-
-struct SelectedSessionsIDs: Hashable, Identifiable {
-    var id: SelectedSessionsIDs { self }
-    let ids: Set<UUID>
-}
-
-private let sectionTitleFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .long
-    formatter.timeStyle = .none
-    formatter.doesRelativeDateFormatting = true
-    return formatter
-}()
+    private let sectionTitleFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .long
+        formatter.timeStyle = .none
+        formatter.doesRelativeDateFormatting = true
+        return formatter
+    }()
 
 #endif
 
@@ -162,9 +162,9 @@ struct ConsoleSessionCell: View {
     var isCompact = true
 
     @Environment(\.store) private var store
-#if os(iOS) || os(visionOS)
-    @Environment(\.editMode) private var editMode
-#endif
+    #if os(iOS) || os(visionOS)
+        @Environment(\.editMode) private var editMode
+    #endif
 
     var body: some View {
         HStack(alignment: .lastTextBaseline) {
@@ -176,26 +176,26 @@ struct ConsoleSessionCell: View {
             details
         }
         .tag(session.id)
-#if os(iOS) || os(visionOS)
-        .listRowBackground((editMode?.wrappedValue.isEditing ?? false) ? Color.clear : nil)
-#endif
+        #if os(iOS) || os(visionOS)
+            .listRowBackground((editMode?.wrappedValue.isEditing ?? false) ? Color.clear : nil)
+        #endif
     }
 
     @ViewBuilder
     private var details: some View {
-#if !os(watchOS)
-        Spacer()
-        if let version = session.fullVersion {
-            Text(version)
-                .lineLimit(1)
-                .frame(minWidth: 40)
-#if os(macOS)
-                .foregroundColor(Color(UXColor.tertiaryLabelColor))
-#else
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-#endif
-        }
-#endif
+        #if !os(watchOS)
+            Spacer()
+            if let version = session.fullVersion {
+                Text(version)
+                    .lineLimit(1)
+                    .frame(minWidth: 40)
+                #if os(macOS)
+                    .foregroundColor(Color(UXColor.tertiaryLabelColor))
+                #else
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                #endif
+            }
+        #endif
     }
 }

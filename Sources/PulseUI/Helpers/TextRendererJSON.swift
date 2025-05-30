@@ -1,12 +1,12 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 import Pulse
 
 #if os(macOS)
-import AppKit
+    import AppKit
 #endif
 
 final class TextRendererJSON {
@@ -29,7 +29,7 @@ final class TextRendererJSON {
 
     init(json: Any, error: NetworkLogger.DecodingError? = nil, options: TextRenderer.Options = .init()) {
         self.options = options
-        self.helper = TextHelper()
+        helper = TextHelper()
         self.json = json
         self.error = error
     }
@@ -40,12 +40,12 @@ final class TextRendererJSON {
         let output = NSMutableAttributedString(string: string, attributes: helper.attributes(role: .body2, style: .monospaced, color: color(for: .key)))
         for (range, element, node) in elements {
             output.addAttribute(.foregroundColor, value: color(for: element), range: range)
-#if os(macOS)
-            if let node = node, TextRendererJSON.makeErrorAttributes != nil {
-                output.addAttribute(.node, value: node, range: range)
-                output.addAttribute(.cursor, value: NSCursor.pointingHand, range: range)
-            }
-#endif
+            #if os(macOS)
+                if let node = node, TextRendererJSON.makeErrorAttributes != nil {
+                    output.addAttribute(.node, value: node, range: range)
+                    output.addAttribute(.cursor, value: NSCursor.pointingHand, range: range)
+                }
+            #endif
         }
         if let range = errorRange {
             output.addAttributes(makeErrorAttributes(), range: range)
@@ -185,7 +185,7 @@ final class TextRendererJSON {
         }
         previousElement = element
 
-        if let error = self.error, errorRange == nil, codingPath == error.context?.codingPath {
+        if let error = error, errorRange == nil, codingPath == error.context?.codingPath {
             switch error {
             case .keyNotFound:
                 // Display error on the first key in the object regardless of what it is
@@ -230,25 +230,25 @@ final class TextRendererJSON {
                 components.path = "tooltip"
                 components.queryItems = [
                     URLQueryItem(name: "title", value: "Decoding Error"),
-                    URLQueryItem(name: "message", value: error.debugDescription)
+                    URLQueryItem(name: "message", value: error.debugDescription),
                 ]
                 return components.url as Any
             }(),
-            .underlineColor: UXColor.clear
+            .underlineColor: UXColor.clear,
         ]
     }
 }
 
-struct JSONColors {
+enum JSONColors {
     static let punctuation = UXColor.dynamic(
-        light: .init(red: 113.0/255.0, green: 128.0/255.0, blue: 141.0/255.0, alpha: 1.0),
-        dark: .init(red: 113.0/255.0, green: 128.0/255.0, blue: 141.0/255.0, alpha: 1.0)
+        light: .init(red: 113.0 / 255.0, green: 128.0 / 255.0, blue: 141.0 / 255.0, alpha: 1.0),
+        dark: .init(red: 113.0 / 255.0, green: 128.0 / 255.0, blue: 141.0 / 255.0, alpha: 1.0)
     )
     static let key = UXColor.label
     static let valueString = Palette.red
     static let valueOther = UXColor.dynamic(
-        light: .init(red: 28.0/255.0, green: 0.0/255.0, blue: 207.0/255.0, alpha: 1.0),
-        dark: .init(red: 208.0/255.0, green: 191.0/255.0, blue: 105.0/255.0, alpha: 1.0)
+        light: .init(red: 28.0 / 255.0, green: 0.0 / 255.0, blue: 207.0 / 255.0, alpha: 1.0),
+        dark: .init(red: 208.0 / 255.0, green: 191.0 / 255.0, blue: 105.0 / 255.0, alpha: 1.0)
     )
     static let null = Palette.pink
 }

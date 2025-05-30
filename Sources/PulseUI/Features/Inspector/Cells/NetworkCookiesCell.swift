@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct NetworkCookiesCell: View {
@@ -44,8 +44,8 @@ struct NetworkCookiesCellViewModel {
     init(title: String, headers: [String: String]?, url: URL?) {
         self.title = title
         let cookies = getCookies(from: headers, url: url)
-        self.details = "\(cookies.count)"
-        self.isEnabled = !cookies.isEmpty
+        details = "\(cookies.count)"
+        isEnabled = !cookies.isEmpty
         self.cookies = cookies
     }
 }
@@ -85,25 +85,25 @@ private func makeAttributedString(for cookies: [HTTPCookie]) -> NSAttributedStri
 }
 
 #if DEBUG
-@available(iOS 15, visionOS 1.0, *)
-struct NetworkCookiesCell_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            List {
-                ForEach(MockTask.allEntities, id: \.objectID) { task in
-                    Section {
-                        let url = URL(string: task.url!)!
-                        Text(url.absoluteString)
-                        NetworkCookiesCell(viewModel: .init(title: "Original Request Cookies", headers: task.originalRequest?.headers, url: url))
-                        NetworkCookiesCell(viewModel: .init(title: "Current Request Cookies", headers: task.currentRequest?.headers, url: url))
-                        NetworkCookiesCell(viewModel: .init(title: "Response Cookies", headers: task.response?.headers, url: url))
+    @available(iOS 15, visionOS 1.0, *)
+    struct NetworkCookiesCell_Previews: PreviewProvider {
+        static var previews: some View {
+            NavigationView {
+                List {
+                    ForEach(MockTask.allEntities, id: \.objectID) { task in
+                        Section {
+                            let url = URL(string: task.url!)!
+                            Text(url.absoluteString)
+                            NetworkCookiesCell(viewModel: .init(title: "Original Request Cookies", headers: task.originalRequest?.headers, url: url))
+                            NetworkCookiesCell(viewModel: .init(title: "Current Request Cookies", headers: task.currentRequest?.headers, url: url))
+                            NetworkCookiesCell(viewModel: .init(title: "Response Cookies", headers: task.response?.headers, url: url))
+                        }
                     }
                 }
+                #if os(macOS)
+                .frame(width: 260)
+                #endif
             }
-#if os(macOS)
-            .frame(width: 260)
-#endif
         }
     }
-}
 #endif

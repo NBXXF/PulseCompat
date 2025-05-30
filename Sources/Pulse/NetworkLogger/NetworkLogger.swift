@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
@@ -41,6 +41,7 @@ public final class NetworkLogger: @unchecked Sendable {
         get { _shared.value }
         set { _shared.value = newValue }
     }
+
     private static let _shared = Mutex(NetworkLogger())
 
     /// The logger configuration.
@@ -113,9 +114,9 @@ public final class NetworkLogger: @unchecked Sendable {
     ///   - store: The target store for network requests.
     ///   - configuration: The store configuration.
     public init(store: LoggerStore? = nil, configuration: Configuration = .init()) {
-        self._store = store
+        _store = store
         self.configuration = configuration
-        self.processPatterns()
+        processPatterns()
     }
 
 //    /// Initializes and configures the network logger.
@@ -132,7 +133,7 @@ public final class NetworkLogger: @unchecked Sendable {
             process(pattern, options: [])
         }
 
-        func process(_ pattern: String, options: [Regex.Options]) -> Regex? {
+        func process(_ pattern: String, options _: [Regex.Options]) -> Regex? {
             do {
                 let pattern = configuration.isRegexEnabled ? pattern : expandingWildcards(pattern)
                 return try Regex(pattern)
@@ -142,17 +143,17 @@ public final class NetworkLogger: @unchecked Sendable {
             }
         }
 
-        self.includedHosts = configuration.includedHosts.compactMap(process)
-        self.includedURLs = configuration.includedURLs.compactMap(process)
-        self.excludedHosts = configuration.excludedHosts.compactMap(process)
-        self.excludedURLs = configuration.excludedURLs.compactMap(process)
-        self.sensitiveHeaders = configuration.sensitiveHeaders.compactMap {
+        includedHosts = configuration.includedHosts.compactMap(process)
+        includedURLs = configuration.includedURLs.compactMap(process)
+        excludedHosts = configuration.excludedHosts.compactMap(process)
+        excludedURLs = configuration.excludedURLs.compactMap(process)
+        sensitiveHeaders = configuration.sensitiveHeaders.compactMap {
             process($0, options: [.caseInsensitive])
         }
-        self.sensitiveQueryItems = configuration.sensitiveQueryItems
-        self.sensitiveDataFields = configuration.sensitiveDataFields
+        sensitiveQueryItems = configuration.sensitiveQueryItems
+        sensitiveDataFields = configuration.sensitiveDataFields
 
-        self.isFilteringNeeded = !includedHosts.isEmpty || !excludedHosts.isEmpty || !includedURLs.isEmpty || !excludedURLs.isEmpty
+        isFilteringNeeded = !includedHosts.isEmpty || !excludedHosts.isEmpty || !includedURLs.isEmpty || !excludedURLs.isEmpty
     }
 
     // MARK: Logging
@@ -275,7 +276,8 @@ public final class NetworkLogger: @unchecked Sendable {
         let absoluteString = url.absoluteString
         if !includedHosts.isEmpty || !includedURLs.isEmpty {
             guard includedHosts.contains(where: { $0.isMatch(host) }) ||
-                    includedURLs.contains(where: { $0.isMatch(absoluteString) }) else {
+                includedURLs.contains(where: { $0.isMatch(absoluteString) })
+            else {
                 return false
             }
         }

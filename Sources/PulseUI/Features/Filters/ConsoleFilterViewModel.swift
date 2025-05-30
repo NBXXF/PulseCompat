@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import Combine
 import CoreData
 import Pulse
-import Combine
 import SwiftUI
 
 final class ConsoleFiltersViewModel: ObservableObject {
@@ -23,7 +23,7 @@ final class ConsoleFiltersViewModel: ObservableObject {
 
     init(options: ConsoleDataSource.PredicateOptions) {
         self.options = options
-        self.defaultCriteria = options.filters
+        defaultCriteria = options.filters
     }
 
     // MARK: Helpers
@@ -38,7 +38,7 @@ final class ConsoleFiltersViewModel: ObservableObject {
     }
 
     func select(sessions: Set<UUID>) {
-        self.criteria.shared.sessions.selection = sessions
+        criteria.shared.sessions.selection = sessions
     }
 
     func resetAll() {

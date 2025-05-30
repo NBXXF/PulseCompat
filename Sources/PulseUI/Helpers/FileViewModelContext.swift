@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Pulse
 
@@ -37,7 +37,7 @@ extension NetworkTaskEntity {
     /// task is pending, but it's from the previous app run.
     func state(in store: LoggerStore?) -> NetworkTaskEntity.State? {
         let state = self.state
-        if state == .pending, let store, self.session != store.session.id {
+        if state == .pending, let store, session != store.session.id {
             return nil
         }
         return state

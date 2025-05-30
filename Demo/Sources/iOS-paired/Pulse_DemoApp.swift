@@ -2,11 +2,11 @@
 //
 // Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
 
-import SwiftUI
+import OSLog
 import Pulse
 import PulseUI
+import SwiftUI
 import WatchConnectivity
-import OSLog
 
 @main
 struct PulseDemo_iOS: App {
@@ -38,20 +38,20 @@ private final class AppViewModel: NSObject, ObservableObject, WCSessionDelegate 
         // testProxy()
     }
 
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+    func session(_: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         os_log("WCSession.activationDidCompleteWith(state: %{public}@, error: %{public}@)", log: log, "\(activationState)", String(describing: error))
     }
 
-    func sessionDidBecomeInactive(_ session: WCSession) {
+    func sessionDidBecomeInactive(_: WCSession) {
         os_log("WCSession.sessionDidBecomeInactive()", log: log)
     }
 
-    func sessionDidDeactivate(_ session: WCSession) {
+    func sessionDidDeactivate(_: WCSession) {
         os_log("WCSession.sessionDidDeactivate()", log: log)
     }
 
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
-        os_log("WCSession.didReceiveFile(url: %{public}@, metadata: %{public}@", log: log, String(describing: file.fileURL), String(describing:  file.metadata?.description))
+        os_log("WCSession.didReceiveFile(url: %{public}@, metadata: %{public}@", log: log, String(describing: file.fileURL), String(describing: file.metadata?.description))
 
         LoggerStore.session(session, didReceive: file)
     }
@@ -85,11 +85,11 @@ private func testProxy() {
 private final class MockSessionDelegate: NSObject, URLSessionDelegate, URLSessionTaskDelegate, URLSessionDownloadDelegate {
     var completion: ((URLSessionTask, Error?) -> Void)?
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         completion?(task, error)
     }
 
-    func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+    func urlSession(_: URLSession, downloadTask _: URLSessionDownloadTask, didFinishDownloadingTo _: URL) {
         print("here")
     }
 }

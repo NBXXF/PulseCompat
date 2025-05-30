@@ -1,12 +1,12 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
-extension LoggerStore {
+public extension LoggerStore {
     /// The events used for syncing data between stores.
-    @frozen public enum Event: Sendable {
+    @frozen enum Event: Sendable {
         case messageStored(MessageCreated)
         case networkTaskCreated(NetworkTaskCreated)
         case networkTaskProgressUpdated(NetworkTaskProgressUpdated)
@@ -37,14 +37,14 @@ extension LoggerStore {
             }
 
             init(_ entity: LoggerMessageEntity) {
-                self.createdAt = entity.createdAt
-                self.label = entity.label
-                self.level = LoggerStore.Level(rawValue: entity.level) ?? .debug
-                self.message = entity.text
-                self.metadata = entity.metadata
-                self.file = entity.file
-                self.function = entity.function
-                self.line = UInt(entity.line)
+                createdAt = entity.createdAt
+                label = entity.label
+                level = LoggerStore.Level(rawValue: entity.level) ?? .debug
+                message = entity.text
+                metadata = entity.metadata
+                file = entity.file
+                function = entity.function
+                line = UInt(entity.line)
             }
         }
 
@@ -118,23 +118,23 @@ extension LoggerStore {
             }
 
             init(_ entity: NetworkTaskEntity) {
-                self.taskId = entity.taskId
-                self.taskType = NetworkLogger.TaskType(rawValue: entity.taskType) ?? .dataTask
-                self.createdAt = entity.createdAt
-                self.originalRequest = (entity.currentRequest.map(NetworkLogger.Request.init)) ?? .init(.init())
-                self.currentRequest = entity.currentRequest.map(NetworkLogger.Request.init)
-                self.response = entity.response.map(NetworkLogger.Response.init)
-                self.error = entity.error.map(NetworkLogger.ResponseError.init)
-                self.requestBody = entity.requestBody?.data
-                self.responseBody = entity.responseBody?.data
+                taskId = entity.taskId
+                taskType = NetworkLogger.TaskType(rawValue: entity.taskType) ?? .dataTask
+                createdAt = entity.createdAt
+                originalRequest = (entity.currentRequest.map(NetworkLogger.Request.init)) ?? .init(.init())
+                currentRequest = entity.currentRequest.map(NetworkLogger.Request.init)
+                response = entity.response.map(NetworkLogger.Response.init)
+                error = entity.error.map(NetworkLogger.ResponseError.init)
+                requestBody = entity.requestBody?.data
+                responseBody = entity.responseBody?.data
                 if entity.hasMetrics, let interval = entity.taskInterval {
                     let transactions = entity.orderedTransactions.map {
                         NetworkLogger.TransactionMetrics($0)
                     }
-                    self.metrics = NetworkLogger.Metrics(taskInterval: interval, redirectCount: Int(entity.redirectCount), transactions: transactions)
+                    metrics = NetworkLogger.Metrics(taskInterval: interval, redirectCount: Int(entity.redirectCount), transactions: transactions)
                 }
-                self.label = entity.message?.label
-                self.taskDescription = entity.taskDescription
+                label = entity.message?.label
+                taskDescription = entity.taskDescription
             }
         }
 
@@ -142,11 +142,11 @@ extension LoggerStore {
             switch self {
             case .messageStored:
                 return nil
-            case .networkTaskCreated(let event):
+            case let .networkTaskCreated(event):
                 return event.originalRequest.url
-            case .networkTaskProgressUpdated(let event):
+            case let .networkTaskProgressUpdated(event):
                 return event.url
-            case .networkTaskCompleted(let event):
+            case let .networkTaskCompleted(event):
                 return event.originalRequest.url
             }
         }

@@ -1,27 +1,27 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 #if os(iOS) || os(macOS) || os(visionOS)
-extension Color {
-    static var separator: Color { Color(UXColor.separator) }
-    static var secondaryFill: Color { Color(UXColor.secondarySystemFill) }
-}
+    extension Color {
+        static var separator: Color { Color(UXColor.separator) }
+        static var secondaryFill: Color { Color(UXColor.secondarySystemFill) }
+    }
 #endif
 
 #if os(watchOS) || os(tvOS)
-extension Color {
-    static var separator: Color { Color.secondary.opacity(0.3) }
-    static var secondaryFill: Color { Color.secondary.opacity(0.3) }
-}
+    extension Color {
+        static var separator: Color { Color.secondary.opacity(0.3) }
+        static var secondaryFill: Color { Color.secondary.opacity(0.3) }
+    }
 #endif
 
 extension View {
     func invisible() -> some View {
-        self.hidden().accessibilityHidden(true)
+        hidden().accessibilityHidden(true)
     }
 }
 
@@ -47,20 +47,20 @@ extension ContentSizeCategory {
 
 #if os(iOS) || os(visionOS)
 
-enum Keyboard {
-    static var isHidden: AnyPublisher<Bool, Never> {
-        Publishers.Merge(
-            NotificationCenter.default
-                .publisher(for: UIResponder.keyboardWillShowNotification)
-                .map { _ in false },
+    enum Keyboard {
+        static var isHidden: AnyPublisher<Bool, Never> {
+            Publishers.Merge(
+                NotificationCenter.default
+                    .publisher(for: UIResponder.keyboardWillShowNotification)
+                    .map { _ in false },
 
-            NotificationCenter.default
-                .publisher(for: UIResponder.keyboardWillHideNotification)
-                .map { _ in true }
-        )
-        .eraseToAnyPublisher()
+                NotificationCenter.default
+                    .publisher(for: UIResponder.keyboardWillHideNotification)
+                    .map { _ in true }
+            )
+            .eraseToAnyPublisher()
+        }
     }
-}
 
 #endif
 
@@ -77,21 +77,21 @@ extension View {
 extension Backport {
     @ViewBuilder
     func presentationDetents(_ detents: Set<PresentationDetent>) -> some View {
-#if os(iOS) || os(visionOS)
-        if #available(iOS 16, *) {
-            let detents = detents.map { (detent) -> SwiftUI.PresentationDetent in
-                switch detent {
-                case .large: return .large
-                case .medium: return .medium
+        #if os(iOS) || os(visionOS)
+            if #available(iOS 16, *) {
+                let detents = detents.map { detent -> SwiftUI.PresentationDetent in
+                    switch detent {
+                    case .large: return .large
+                    case .medium: return .medium
+                    }
                 }
+                self.content.presentationDetents(Set(detents))
+            } else {
+                content
             }
-            self.content.presentationDetents(Set(detents))
-        } else {
-            self.content
-        }
-#else
-        self.content
-#endif
+        #else
+            content
+        #endif
     }
 
     enum PresentationDetent {
@@ -102,10 +102,10 @@ extension Backport {
 
 extension View {
     func inlineNavigationTitle(_ title: String) -> some View {
-        self.navigationTitle(title)
-#if os(iOS) || os(visionOS)
+        navigationTitle(title)
+        #if os(iOS) || os(visionOS)
             .navigationBarTitleDisplayMode(.inline)
-#endif
+        #endif
     }
 }
 

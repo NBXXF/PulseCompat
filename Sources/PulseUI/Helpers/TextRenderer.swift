@@ -1,14 +1,14 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import CoreData
 import Foundation
 import Pulse
-import CoreData
 import SwiftUI
 
 #if os(iOS) || os(visionOS)
-import PDFKit
+    import PDFKit
 #endif
 
 /// Low-level attributed string creation API.
@@ -35,7 +35,7 @@ final class TextRenderer {
 
     init(options: Options = .init()) {
         self.options = options
-        self.helper = TextHelper()
+        helper = TextHelper()
     }
 
     func make(_ render: (TextRenderer) -> Void) -> NSAttributedString {
@@ -124,8 +124,9 @@ final class TextRenderer {
             append(section: .makeParameters(for: request))
         }
 
-        if content.contains(.originalRequestHeaders) && content.contains(.currentRequestHeaders),
-           let originalRequest = task.originalRequest, let currentRequest = task.currentRequest {
+        if content.contains(.originalRequestHeaders), content.contains(.currentRequestHeaders),
+           let originalRequest = task.originalRequest, let currentRequest = task.currentRequest
+        {
             append(section: .makeHeaders(title: "Original Request Headers", headers: originalRequest.headers), count: true)
             append(section: .makeHeaders(title: "Current Request Headers", headers: currentRequest.headers), count: true)
         } else if content.contains(.originalRequestHeaders), let originalRequest = task.originalRequest {
@@ -162,7 +163,7 @@ final class TextRenderer {
 
         let suffix = status.isMock ? " (mock)" : ""
         string.append(render(status.status.title + suffix + "\n", role: .title, weight: .semibold, color: UXColor(status.status.tint)))
-        string.append(self.spacer())
+        string.append(spacer())
         var urlAttributes = helper.attributes(role: .body2, weight: .regular)
         urlAttributes[.underlineColor] = UXColor.clear
         string.append((task.httpMethod ?? "GET") + "\n", helper.attributes(role: .body, weight: .semibold))
@@ -193,9 +194,9 @@ final class TextRenderer {
         urlAttributes[.link] = task.objectID.uriRepresentation()
         urlAttributes[.underlineColor] = titleColor.withAlphaComponent(0.5)
         urlAttributes[.underlineStyle] = 1
-#if os(macOS)
-        urlAttributes[.cursor] = NSCursor.pointingHand
-#endif
+        #if os(macOS)
+            urlAttributes[.cursor] = NSCursor.pointingHand
+        #endif
         string.append((task.httpMethod ?? "GET") + " " + (task.url ?? "–") + "\n", urlAttributes)
     }
 
@@ -204,7 +205,7 @@ final class TextRenderer {
             let status = StatusLabelViewModel(transaction: transaction)
             let method = transaction.request.httpMethod ?? "GET"
             string.append(render(status.title + "\n", role: .title, weight: .semibold, color: UXColor(status.tint)))
-            string.append(self.spacer())
+            string.append(spacer())
             var urlAttributes = helper.attributes(role: .body2, weight: .regular)
             urlAttributes[.underlineColor] = UXColor.clear
             string.append(method + "\n", helper.attributes(role: .body, weight: .semibold))
@@ -292,7 +293,7 @@ final class TextRenderer {
     private func _render(dataSize: Int64, contentType: NetworkLogger.ContentType?) -> NSAttributedString {
         let string = [
             ByteCountFormatter.string(fromByteCount: max(0, dataSize)),
-            contentType.map { "(\($0.rawValue))" }
+            contentType.map { "(\($0.rawValue))" },
         ].compactMap { $0 }.joined(separator: " ")
         return render(string, role: .body2)
     }
@@ -301,7 +302,8 @@ final class TextRenderer {
         let string = "https://placeholder.com/path?" + string
         guard let components = URLComponents(string: string),
               let queryItems = components.queryItems,
-              !queryItems.isEmpty else {
+              !queryItems.isEmpty
+        else {
             return nil
         }
         return KeyValueSectionViewModel.makeQueryItems(for: queryItems)
@@ -321,11 +323,11 @@ final class TextRenderer {
         let title = [section.title, details].compactMap { $0 }.joined(separator: " ")
 
         let titleColor: UXColor
-#if os(macOS)
-        titleColor = .label
-#else
-        titleColor = .secondaryLabel
-#endif
+        #if os(macOS)
+            titleColor = .label
+        #else
+            titleColor = .secondaryLabel
+        #endif
 
         let string = NSMutableAttributedString(string: title + "\n", attributes: helper.attributes(role: .subheadline, color: titleColor))
         string.append(render(section.items, color: section.color, style: style))
@@ -352,32 +354,32 @@ final class TextRenderer {
 
         for (key, value) in values {
             keys.append(append(key))
-#if os(watchOS)
-            separators.append(append(":\n"))
-#else
-            separators.append(append(": "))
-#endif
+            #if os(watchOS)
+                separators.append(append(":\n"))
+            #else
+                separators.append(append(": "))
+            #endif
             append("\(value ?? "–")\n")
         }
         let output = NSMutableAttributedString(string: string, attributes: helper.attributes(role: .body2, style: style))
 
         let keyWeight: UXFont.Weight
-#if os(macOS)
-        keyWeight = .regular
-#else
-        keyWeight = options.color == .full ? .medium : .semibold
-#endif
+        #if os(macOS)
+            keyWeight = .regular
+        #else
+            keyWeight = options.color == .full ? .medium : .semibold
+        #endif
 
         let keyFont = helper.font(style: .init(role: .body2, style: style, weight: keyWeight))
         for range in keys {
             output.addAttribute(.font, value: keyFont, range: range)
-#if os(macOS)
-            output.addAttribute(.foregroundColor, value: UXColor.secondaryLabel, range: range)
-#else
-            if options.color == .full {
-                output.addAttribute(.foregroundColor, value: UXColor(color), range: range)
-            }
-#endif
+            #if os(macOS)
+                output.addAttribute(.foregroundColor, value: UXColor.secondaryLabel, range: range)
+            #else
+                if options.color == .full {
+                    output.addAttribute(.foregroundColor, value: UXColor(color), range: range)
+                }
+            #endif
         }
         for range in separators {
             output.addAttribute(.foregroundColor, value: UXColor.secondaryLabel, range: range)
@@ -415,54 +417,54 @@ extension NSAttributedString.Key {
 // MARK: - Previews
 
 #if DEBUG
-struct ConsoleTextRenderer_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            let string = TextRenderer(options: .sharing).make {
-                $0.render(task, content: .sharing, store: .mock)
+    struct ConsoleTextRenderer_Previews: PreviewProvider {
+        static var previews: some View {
+            Group {
+                let string = TextRenderer(options: .sharing).make {
+                    $0.render(task, content: .sharing, store: .mock)
+                }
+                let stringWithColor = TextRenderer(options: .init(color: .full)).make {
+                    $0.render(task, content: .all, store: .mock)
+                }
+                let html = try! TextUtilities.html(from: TextRenderer(options: .sharing).make {
+                    $0.render(task, content: .sharing, store: .mock)
+                })
+
+                RichTextView(viewModel: .init(string: string))
+                    .previewDisplayName("Task")
+
+                RichTextView(viewModel: .init(string: TextRenderer(options: .sharing).make { $0.render(task, content: .sharing, store: .mock) }))
+                    .previewDisplayName("Task (Share)")
+
+                RichTextView(viewModel: .init(string: stringWithColor))
+                    .previewDisplayName("Task (Color)")
+
+                RichTextView(viewModel: .init(string: NSAttributedString(string: ShareStoreTask(entities: try! LoggerStore.mock.allMessages(), store: .mock, output: .plainText, completion: { _ in }).share().items[0] as! String)))
+                    .previewDisplayName("Task (Plain)")
+
+                RichTextView(viewModel: .init(string: TextRenderer(options: .sharing).make { $0.render(task.orderedTransactions[0]) }))
+                    .previewDisplayName("Transaction")
+
+                RichTextView(viewModel: .init(string: TextRendererHTML(html: String(data: html, encoding: .utf8)!).render()))
+                    .previewLayout(.fixed(width: 1160, height: 2000)) // Disable interaction to view it
+                    .previewDisplayName("HTML (Raw)")
+
+                #if os(iOS) || os(macOS) || os(visionOS)
+                    WebView(data: html, contentType: "application/html")
+                        .edgesIgnoringSafeArea([.bottom])
+                        .previewDisplayName("HTML")
+                #endif
+
+                #if os(iOS) || os(visionOS)
+                    PDFKitRepresentedView(document: PDFDocument(data: try! TextUtilities.pdf(from: string))!)
+                        .edgesIgnoringSafeArea([.all])
+                        .previewDisplayName("PDF")
+                #endif
             }
-            let stringWithColor = TextRenderer(options: .init(color: .full)).make {
-                $0.render(task, content: .all, store: .mock)
-            }
-            let html = try! TextUtilities.html(from: TextRenderer(options: .sharing).make {
-                $0.render(task, content: .sharing, store: .mock)
-            })
-
-            RichTextView(viewModel: .init(string: string))
-                .previewDisplayName("Task")
-
-            RichTextView(viewModel: .init(string: TextRenderer(options: .sharing).make { $0.render(task, content: .sharing, store: .mock) }))
-                .previewDisplayName("Task (Share)")
-
-            RichTextView(viewModel: .init(string: stringWithColor))
-                .previewDisplayName("Task (Color)")
-
-            RichTextView(viewModel: .init(string: NSAttributedString(string: ShareStoreTask(entities: try! LoggerStore.mock.allMessages(), store: .mock, output: .plainText, completion: { _ in }).share().items[0] as! String)))
-                .previewDisplayName("Task (Plain)")
-
-            RichTextView(viewModel: .init(string: TextRenderer(options: .sharing).make { $0.render(task.orderedTransactions[0]) }))
-                .previewDisplayName("Transaction")
-
-            RichTextView(viewModel: .init(string: TextRendererHTML(html: String(data: html, encoding: .utf8)!).render()))
-                .previewLayout(.fixed(width: 1160, height: 2000)) // Disable interaction to view it
-                .previewDisplayName("HTML (Raw)")
-
-#if os(iOS) || os(macOS) || os(visionOS)
-            WebView(data: html, contentType: "application/html")
-                .edgesIgnoringSafeArea([.bottom])
-                .previewDisplayName("HTML")
-#endif
-
-#if os(iOS) || os(visionOS)
-            PDFKitRepresentedView(document: PDFDocument(data: try! TextUtilities.pdf(from: string))!)
-                .edgesIgnoringSafeArea([.all])
-                .previewDisplayName("PDF")
-#endif
         }
     }
-}
 
-private let task = LoggerStore.preview.entity(for: .login)
+    private let task = LoggerStore.preview.entity(for: .login)
 #endif
 
 struct NetworkContent: OptionSet {
@@ -482,19 +484,19 @@ struct NetworkContent: OptionSet {
     static let responseBody = NetworkContent(rawValue: 1 << 11)
 
     static let sharing: NetworkContent = [
-        largeHeader, taskDetails, errorDetails, currentRequestHeaders, requestBody, responseHeaders, responseBody
+        largeHeader, taskDetails, errorDetails, currentRequestHeaders, requestBody, responseHeaders, responseBody,
     ]
 
     static let preview: NetworkContent = [
-        largeHeader, taskDetails, errorDetails, responseBody
+        largeHeader, taskDetails, errorDetails, responseBody,
     ]
 
     static let summary: NetworkContent = [
-        largeHeader, taskDetails, errorDetails, requestComponents, requestQueryItems, errorDetails, originalRequestHeaders, currentRequestHeaders, requestOptions, responseHeaders
+        largeHeader, taskDetails, errorDetails, requestComponents, requestQueryItems, errorDetails, originalRequestHeaders, currentRequestHeaders, requestOptions, responseHeaders,
     ]
 
     static let all: NetworkContent = [
-        largeHeader, taskDetails, errorDetails, requestComponents, requestQueryItems, errorDetails, originalRequestHeaders, currentRequestHeaders, requestOptions, requestBody, responseHeaders, responseBody
+        largeHeader, taskDetails, errorDetails, requestComponents, requestQueryItems, errorDetails, originalRequestHeaders, currentRequestHeaders, requestOptions, requestBody, responseHeaders, responseBody,
     ]
 }
 

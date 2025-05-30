@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
@@ -33,7 +33,8 @@ extension URLSessionProxyDelegate {
 
         sharedNetworkLogger = logger
         if let lhs = class_getClassMethod(URLSession.self, #selector(URLSession.init(configuration:delegate:delegateQueue:))),
-           let rhs = class_getClassMethod(URLSession.self, #selector(URLSession.pulse_init(configuration:delegate:delegateQueue:))) {
+           let rhs = class_getClassMethod(URLSession.self, #selector(URLSession.pulse_init(configuration:delegate:delegateQueue:)))
+        {
             method_exchangeImplementations(lhs, rhs)
         }
     }
@@ -61,16 +62,17 @@ private var sharedNetworkLogger: NetworkLogger? {
     get { _sharedLogger.value }
     set { _sharedLogger.value = newValue }
 }
+
 private let _sharedLogger = Mutex<NetworkLogger?>(nil)
 
 private extension URLSession {
     @objc class func pulse_init(configuration: URLSessionConfiguration, delegate: URLSessionDelegate?, delegateQueue: OperationQueue?) -> URLSession {
         guard isConfiguringSessionSafe(delegate: delegate) else {
-            return self.pulse_init(configuration: configuration, delegate: delegate, delegateQueue: delegateQueue)
+            return pulse_init(configuration: configuration, delegate: delegate, delegateQueue: delegateQueue)
         }
         configuration.protocolClasses = [MockingURLProtocol.self] + (configuration.protocolClasses ?? [])
         let delegate = URLSessionProxyDelegate(logger: sharedNetworkLogger, delegate: delegate)
-        return self.pulse_init(configuration: configuration, delegate: delegate, delegateQueue: delegateQueue)
+        return pulse_init(configuration: configuration, delegate: delegate, delegateQueue: delegateQueue)
     }
 }
 

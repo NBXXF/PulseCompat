@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct NetworkDetailsView: View {
     private var title: String
@@ -21,7 +21,7 @@ struct NetworkDetailsView: View {
 
     init(title: String, text: @escaping () -> NSAttributedString?) {
         self.title = title
-        self.viewModel = NetworkDetailsViewModel(text)
+        viewModel = NetworkDetailsViewModel(text)
     }
 
     var body: some View {
@@ -43,6 +43,6 @@ final class NetworkDetailsViewModel {
     private let makeString: () -> NSAttributedString?
 
     init(_ closure: @escaping () -> NSAttributedString?) {
-        self.makeString = closure
+        makeString = closure
     }
 }

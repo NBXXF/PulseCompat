@@ -6,8 +6,8 @@
 //  Copyright © 2021 kean. All rights reserved.
 //
 
-import SwiftUI
 import PulseUI
+import SwiftUI
 
 struct ContentView: View {
     var body: some View {

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 import Security
@@ -21,7 +21,7 @@ extension Keychain {
     }
 
     func data(forKey key: String) -> Data? {
-        let query = self.getOneQuery(byKey: key)
+        let query = getOneQuery(byKey: key)
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         guard status == errSecSuccess else {
@@ -46,15 +46,15 @@ extension Keychain {
     }
 
     func deleteItem(forKey key: String) throws {
-        let query = self.baseQuery(withKey: key)
+        let query = baseQuery(withKey: key)
         try check(SecItemDelete(query as CFDictionary))
     }
 
     func deleteAll() throws {
-        var query = self.baseQuery()
-#if os(macOS)
-        query[kSecMatchLimit as String] = kSecMatchLimitAll
-#endif
+        var query = baseQuery()
+        #if os(macOS)
+            query[kSecMatchLimit as String] = kSecMatchLimitAll
+        #endif
         let status = SecItemDelete(query as CFDictionary)
         guard status != errSecItemNotFound else { return }
         try check(status)
@@ -74,14 +74,14 @@ private extension Keychain {
     func baseQuery(withKey key: String? = nil, data: Data? = nil) -> [String: Any] {
         var query: [String: Any] = [:]
         query[kSecClass as String] = kSecClassGenericPassword
-        query[kSecAttrService as String] = self.service
+        query[kSecAttrService as String] = service
         if let key = key {
             query[kSecAttrAccount as String] = key
         }
         if let data = data {
             query[kSecValueData as String] = data
         }
-        if let accessGroup = self.accessGroup {
+        if let accessGroup = accessGroup {
             query[kSecAttrAccessGroup as String] = accessGroup
         }
         return query

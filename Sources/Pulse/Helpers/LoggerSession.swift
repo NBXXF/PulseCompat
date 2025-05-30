@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
-extension LoggerStore {
-    public struct Session: Codable, Sendable {
+public extension LoggerStore {
+    struct Session: Codable, Sendable {
         public let id: UUID
         public let startDate: Date
 

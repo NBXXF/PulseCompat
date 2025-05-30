@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import CoreData
 import Foundation
 import Pulse
-import CoreData
 
 public enum ShareStoreOutput: String, RawRepresentable, Codable, CaseIterable {
     case store, text, html, har
@@ -34,7 +34,7 @@ public struct ShareItems: Identifiable {
     public let size: Int64?
     public let cleanup: () -> Void
 
-    init(_ items: [Any], size: Int64? = nil, cleanup: @escaping () -> Void = { }) {
+    init(_ items: [Any], size: Int64? = nil, cleanup: @escaping () -> Void = {}) {
         self.items = items
         self.size = size
         self.cleanup = cleanup
@@ -78,14 +78,14 @@ enum ShareService {
             let fileURL = directory.write(data: html, extension: "html")
             return ShareItems([fileURL], size: Int64(html.count), cleanup: directory.remove)
         case .pdf:
-#if os(iOS) || os(visionOS)
-            let pdf = (try? TextUtilities.pdf(from: string)) ?? Data()
-            let directory = TemporaryDirectory()
-            let fileURL = directory.write(data: pdf, extension: "pdf")
-            return ShareItems([fileURL], size: Int64(pdf.count), cleanup: directory.remove)
-#else
-            return ShareItems(["Sharing as PDF is not supported on this platform"])
-#endif
+            #if os(iOS) || os(visionOS)
+                let pdf = (try? TextUtilities.pdf(from: string)) ?? Data()
+                let directory = TemporaryDirectory()
+                let fileURL = directory.write(data: pdf, extension: "pdf")
+                return ShareItems([fileURL], size: Int64(pdf.count), cleanup: directory.remove)
+            #else
+                return ShareItems(["Sharing as PDF is not supported on this platform"])
+            #endif
         case .har:
             let har = TextUtilities.har(from: string)
             let directory = TemporaryDirectory()

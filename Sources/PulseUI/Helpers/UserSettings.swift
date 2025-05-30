@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
-import Pulse
 import Combine
+import Pulse
+import SwiftUI
 
 /// Allows you to control Pulse appearance and other settings programmatically.
 public final class UserSettings: ObservableObject {
@@ -52,7 +52,7 @@ public final class UserSettings: ObservableObject {
             let data = rawAllowedShareStoreOutputs.data(using: .utf8) ?? Data()
             return (try? JSONDecoder().decode([ShareStoreOutput].self, from: data)) ?? []
         }
-        set { 
+        set {
             guard let data = try? JSONEncoder().encode(newValue) else { return }
             rawAllowedShareStoreOutputs = String(data: data, encoding: .utf8) ?? "[]"
         }

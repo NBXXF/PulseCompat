@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct NetworkHeadersCell: View {
     let viewModel: NetworkHeadersCellViewModel
@@ -40,30 +40,30 @@ struct NetworkHeadersCellViewModel {
     init(title: String, headers: [String: String]?) {
         self.title = title
         let headers = headers ?? [:]
-        self.details = "\(headers.count)"
-        self.isEnabled = !headers.isEmpty
+        details = "\(headers.count)"
+        isEnabled = !headers.isEmpty
         self.headers = headers
     }
 }
 
 #if DEBUG
-struct NetworkHeadersCell_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            List {
-                ForEach(MockTask.allEntities, id: \.objectID) { task in
-                    Section {
-                        Text(task.url ?? "–")
-                        NetworkHeadersCell(viewModel: .init(title: "Original Request Headers", headers: task.originalRequest?.headers))
-                        NetworkHeadersCell(viewModel: .init(title: "Current Request Headers", headers: task.currentRequest?.headers))
-                        NetworkHeadersCell(viewModel: .init(title: "Response Headers", headers: task.response?.headers))
+    struct NetworkHeadersCell_Previews: PreviewProvider {
+        static var previews: some View {
+            NavigationView {
+                List {
+                    ForEach(MockTask.allEntities, id: \.objectID) { task in
+                        Section {
+                            Text(task.url ?? "–")
+                            NetworkHeadersCell(viewModel: .init(title: "Original Request Headers", headers: task.originalRequest?.headers))
+                            NetworkHeadersCell(viewModel: .init(title: "Current Request Headers", headers: task.currentRequest?.headers))
+                            NetworkHeadersCell(viewModel: .init(title: "Response Headers", headers: task.response?.headers))
+                        }
                     }
                 }
+                #if os(macOS)
+                .frame(width: 260)
+                #endif
             }
-#if os(macOS)
-            .frame(width: 260)
-#endif
         }
     }
-}
 #endif

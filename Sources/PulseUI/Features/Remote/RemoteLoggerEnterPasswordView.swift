@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
+import Combine
 import Network
 import Pulse
-import Combine
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct RemoteLoggerEnterPasswordView: View {
@@ -34,23 +34,23 @@ struct RemoteLoggerEnterPasswordView: View {
             })
         }
         .inlineNavigationTitle("Enter Password")
-#if os(iOS) || os(visionOS)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel", role: .cancel) {
-                    viewModel.pendingPasscodeProtectedServer = nil
+        #if os(iOS) || os(visionOS)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel", role: .cancel) {
+                        viewModel.pendingPasscodeProtectedServer = nil
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Connect") {
+                        connect()
+                    }
                 }
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Connect") {
-                    connect()
-                }
+        #endif
+            .onAppear {
+                isTextFieldFocused = true
             }
-        }
-#endif
-        .onAppear {
-            isTextFieldFocused = true
-        }
     }
 
     private func connect() {

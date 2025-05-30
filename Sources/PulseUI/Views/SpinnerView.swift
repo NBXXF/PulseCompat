@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
+import Combine
 import CoreData
 import Pulse
-import Combine
+import SwiftUI
 
 // MARK: - View
 
@@ -26,12 +26,12 @@ struct SpinnerView: View {
 }
 
 #if DEBUG
-struct SpinnerView_Previews: PreviewProvider {
-    static var previews: some View {
-        SpinnerView(viewModel: .init(title: "Pending", details: "2.5 MB / 6.0 MB"))
-            .previewLayout(.fixed(width: 300, height: 300))
+    struct SpinnerView_Previews: PreviewProvider {
+        static var previews: some View {
+            SpinnerView(viewModel: .init(title: "Pending", details: "2.5 MB / 6.0 MB"))
+                .previewLayout(.fixed(width: 300, height: 300))
+        }
     }
-}
 #endif
 
 // MARK: - ViewModel
@@ -49,7 +49,7 @@ final class ProgressViewModel: ObservableObject {
     }
 
     init(task: NetworkTaskEntity) {
-        self.title = ProgressViewModel.title(for: task)
+        title = ProgressViewModel.title(for: task)
         if task.state == .pending {
             observer1 = task.publisher(for: \.progress, options: [.initial, .new]).sink { [weak self] _ in
                 if let progress = task.progress {
@@ -82,7 +82,7 @@ final class ProgressViewModel: ObservableObject {
     }
 
     private func register(for progress: NetworkTaskProgressEntity) {
-        self.refresh(with: progress)
+        refresh(with: progress)
         observer2 = progress.objectWillChange.sink { [weak self] in
             self?.refresh(with: progress)
         }
@@ -95,7 +95,7 @@ final class ProgressViewModel: ObservableObject {
         if completed > 0 || total > 0 {
             let lhs = ByteCountFormatter.string(fromByteCount: max(0, completed))
             let rhs = ByteCountFormatter.string(fromByteCount: total)
-            self.details = total > 0 ? "\(lhs) / \(rhs)" : lhs
+            details = total > 0 ? "\(lhs) / \(rhs)" : lhs
         }
     }
 }

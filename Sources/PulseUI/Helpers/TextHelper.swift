@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 import SwiftUI
@@ -23,7 +23,7 @@ final class TextHelper {
     }
 
     private(set) lazy var spacerAttributes: [NSAttributedString.Key: Any] = [
-        .font: scaled(font: UXFont.systemFont(ofSize: 10))
+        .font: scaled(font: UXFont.systemFont(ofSize: 10)),
     ]
 
     func attributes(style: TextStyle, color: UXColor?) -> [NSAttributedString.Key: Any] {
@@ -80,23 +80,23 @@ final class TextHelper {
         var size: CGFloat
         let body2Size = (0.9 * getPreferredFontSize(for: .body)).rounded()
         switch style.role {
-#if os(watchOS)
-        case .title: size = getPreferredFontSize(for: .title2)
-#else
-        case .title: size = getPreferredFontSize(for: .title1)
-#endif
+        #if os(watchOS)
+            case .title: size = getPreferredFontSize(for: .title2)
+        #else
+            case .title: size = getPreferredFontSize(for: .title1)
+        #endif
         case .subheadline:
-#if os(macOS)
-            size = (0.9 * body2Size).rounded()
-#else
-            size = (0.84 * body2Size).rounded()
-#endif
+            #if os(macOS)
+                size = (0.9 * body2Size).rounded()
+            #else
+                size = (0.84 * body2Size).rounded()
+            #endif
         case .body: size = getPreferredFontSize(for: .body)
         case .body2: size = body2Size
         }
-#if !os(macOS)
-        if style.style == .monospaced { size -= 2 } // Appears larger than regular
-#endif
+        #if !os(macOS)
+            if style.style == .monospaced { size -= 2 } // Appears larger than regular
+        #endif
         return scaled(font: {
             switch style.style {
             case .proportional: return .systemFont(ofSize: size, weight: style.weight)
@@ -107,11 +107,11 @@ final class TextHelper {
     }
 
     private func scaled(font: UXFont) -> UXFont {
-#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
-        return UIFontMetrics.default.scaledFont(for: font)
-#else
-        return font
-#endif
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+            return UIFontMetrics.default.scaledFont(for: font)
+        #else
+            return font
+        #endif
     }
 
     private struct AttributesKey: Hashable {

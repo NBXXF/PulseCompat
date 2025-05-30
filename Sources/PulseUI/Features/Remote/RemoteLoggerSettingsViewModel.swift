@@ -1,12 +1,12 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import SwiftUI
 import Combine
-import Pulse
+import Foundation
 import Network
+import Pulse
+import SwiftUI
 
 @MainActor
 final class RemoteLoggerSettingsViewModel: ObservableObject {
@@ -58,7 +58,7 @@ final class RemoteLoggerSettingsViewModel: ObservableObject {
             switch $0 {
             case .success:
                 break
-            case .failure(let error):
+            case let .failure(error):
                 self.connectionError = error
                 self.isShowingConnectionError = true
             }
@@ -76,7 +76,7 @@ struct RemoteLoggerServerViewModel: Identifiable {
 extension NWBrowser.Result {
     var name: String? {
         switch endpoint {
-        case .service(let name, _, _, _):
+        case let .service(name, _, _, _):
             return name
         default:
             return nil
@@ -85,7 +85,7 @@ extension NWBrowser.Result {
 
     var isProtected: Bool {
         switch metadata {
-        case .bonjour(let record):
+        case let .bonjour(record):
             return record["protected"].map { Bool($0) } == true
         case .none:
             return false

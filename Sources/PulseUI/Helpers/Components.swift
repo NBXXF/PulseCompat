@@ -1,18 +1,18 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
-import Pulse
 import CoreData
+import Pulse
+import SwiftUI
 
-struct Components {
-#if os(iOS) || os(macOS) || os(visionOS)
-    @available(iOS 15, macOS 13, visionOS 1, *)
-    static func makeSessionPicker(selection: Binding<Set<UUID>>) -> some View {
-        SessionPickerView(selection: selection)
-    }
-#endif
+enum Components {
+    #if os(iOS) || os(macOS) || os(visionOS)
+        @available(iOS 15, macOS 13, visionOS 1, *)
+        static func makeSessionPicker(selection: Binding<Set<UUID>>) -> some View {
+            SessionPickerView(selection: selection)
+        }
+    #endif
 
     static func makeRichTextView(string: NSAttributedString) -> some View {
         RichTextView(viewModel: .init(string: string))
@@ -23,11 +23,11 @@ struct Components {
         ConsoleEntityCell(entity: entity)
     }
 
-    static func makePinView(for task: NetworkTaskEntity) -> some View {
+    static func makePinView(for _: NetworkTaskEntity) -> some View {
         EmptyView()
     }
 
-    static func makePinView(for message: LoggerMessageEntity) -> some View {
+    static func makePinView(for _: LoggerMessageEntity) -> some View {
         EmptyView()
     }
 }

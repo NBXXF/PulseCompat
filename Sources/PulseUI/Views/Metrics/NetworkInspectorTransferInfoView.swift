@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 // MARK: - View
 
@@ -13,33 +13,33 @@ struct NetworkInspectorTransferInfoView: View {
     var isSentHidden = false
     var isReceivedHidden = false
 
-#if os(watchOS)
-    var body: some View {
-        HStack(alignment: .center) {
-            if !isSentHidden {
+    #if os(watchOS)
+        var body: some View {
+            HStack(alignment: .center) {
+                if !isSentHidden {
+                    bytesSent
+                }
+                if !isReceivedHidden {
+                    bytesReceived
+                }
+            }
+            .frame(maxWidth: .infinity)
+        }
+    #else
+        var body: some View {
+            HStack {
+                Spacer()
                 bytesSent
-            }
-            if !isReceivedHidden {
+                Spacer()
+
+                Divider()
+
+                Spacer()
                 bytesReceived
+                Spacer()
             }
         }
-        .frame(maxWidth: .infinity)
-    }
-#else
-    var body: some View {
-        HStack {
-            Spacer()
-            bytesSent
-            Spacer()
-
-            Divider()
-
-            Spacer()
-            bytesReceived
-            Spacer()
-        }
-    }
-#endif
+    #endif
 
     private var bytesSent: some View {
         makeView(
@@ -70,11 +70,11 @@ struct NetworkInspectorTransferInfoView: View {
                     Text(title)
                     Text(total)
                 }
-#if os(macOS)
+                #if os(macOS)
                 .font(.title3.weight(.medium))
-#else
+                #else
                 .font(.headline)
-#endif
+                #endif
             }
             .fixedSize()
             .padding(2)
@@ -100,32 +100,32 @@ struct NetworkInspectorTransferInfoView: View {
 }
 
 #if os(macOS)
-private let valueFont: Font = .callout
+    private let valueFont: Font = .callout
 #else
-private let valueFont: Font = .footnote
+    private let valueFont: Font = .footnote
 #endif
 
 #if os(tvOS)
-private let spacing: CGFloat = 20
+    private let spacing: CGFloat = 20
 #else
-private let spacing: CGFloat? = nil
+    private let spacing: CGFloat? = nil
 #endif
 
 // MARK: - Preview
 
 #if DEBUG
-struct NetworkInspectorTransferInfoView_Previews: PreviewProvider {
-    static var previews: some View {
-        NetworkInspectorTransferInfoView(viewModel: mockModel)
-            .padding()
-            .fixedSize()
-            .previewLayout(.sizeThatFits)
+    struct NetworkInspectorTransferInfoView_Previews: PreviewProvider {
+        static var previews: some View {
+            NetworkInspectorTransferInfoView(viewModel: mockModel)
+                .padding()
+                .fixedSize()
+                .previewLayout(.sizeThatFits)
+        }
     }
-}
 
-private let mockModel = NetworkInspectorTransferInfoViewModel(
-    task: LoggerStore.preview.entity(for: .login)
-)
+    private let mockModel = NetworkInspectorTransferInfoViewModel(
+        task: LoggerStore.preview.entity(for: .login)
+    )
 
 #endif
 
@@ -140,7 +140,7 @@ struct NetworkInspectorTransferInfoViewModel {
     let bodyBytesReceived: String
     let headersBytesReceived: String
 
-    init(empty: Bool) {
+    init(empty _: Bool) {
         totalBytesSent = "–"
         bodyBytesSent = "–"
         headersBytesSent = "–"

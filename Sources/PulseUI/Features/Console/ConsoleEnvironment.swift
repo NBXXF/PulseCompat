@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import Combine
 import CoreData
 import Pulse
-import Combine
 import SwiftUI
 
 /// Contains every dependency that the console views have.
@@ -40,11 +40,11 @@ final class ConsoleEnvironment: ObservableObject {
     init(store: LoggerStore, mode: ConsoleMode = .all) {
         self.store = store
         switch mode {
-        case .all: self.title = "Console"
-        case .logs: self.title = "Logs"
-        case .network: self.title = "Network"
+        case .all: title = "Console"
+        case .logs: title = "Logs"
+        case .network: title = "Network"
         }
-        self.initialMode = mode
+        initialMode = mode
 
         switch mode {
         case .all: self.mode = UserSettings.shared.mode
@@ -58,16 +58,16 @@ final class ConsoleEnvironment: ObservableObject {
             return options
         }
 
-        self.index = LoggerStoreIndex(store: store)
-        self.filters = ConsoleFiltersViewModel(options: makeDefaultOptions())
+        index = LoggerStoreIndex(store: store)
+        filters = ConsoleFiltersViewModel(options: makeDefaultOptions())
 
-        self.logCountObserver = ManagedObjectsCountObserver(
+        logCountObserver = ManagedObjectsCountObserver(
             entity: LoggerMessageEntity.self,
             context: store.viewContext,
             sortDescriptior: NSSortDescriptor(keyPath: \LoggerMessageEntity.createdAt, ascending: false)
         )
 
-        self.taskCountObserver = ManagedObjectsCountObserver(
+        taskCountObserver = ManagedObjectsCountObserver(
             entity: NetworkTaskEntity.self,
             context: store.viewContext,
             sortDescriptior: NSSortDescriptor(keyPath: \NetworkTaskEntity.createdAt, ascending: false)
@@ -102,9 +102,9 @@ final class ConsoleEnvironment: ObservableObject {
         store.removeAll()
         index.clear()
 
-#if os(iOS) || os(visionOS)
-        runHapticFeedback(.success)
-#endif
+        #if os(iOS) || os(visionOS)
+            runHapticFeedback(.success)
+        #endif
     }
 }
 
@@ -145,7 +145,7 @@ extension EnvironmentValues {
 
 extension View {
     func injecting(_ environment: ConsoleEnvironment) -> some View {
-        self.background(ConsoleRouterView()) // important: order
+        background(ConsoleRouterView()) // important: order
             .environmentObject(environment)
             .environmentObject(environment.router)
             .environmentObject(environment.index)

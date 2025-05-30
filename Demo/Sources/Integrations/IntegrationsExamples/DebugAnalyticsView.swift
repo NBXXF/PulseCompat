@@ -2,8 +2,8 @@
 //
 // Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct DebugAnalyticsView: View {
     @FetchRequest(
@@ -79,7 +79,7 @@ private struct DebugAnalyticsDetailsView: View {
         }.filter {
             guard !searchText.isEmpty else { return true }
             return $0.key.localizedCaseInsensitiveContains(searchText) ||
-            $0.value.localizedCaseInsensitiveContains(searchText)
+                $0.value.localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -118,17 +118,17 @@ private let timeFormatter: DateFormatter = {
 }()
 
 #if DEBUG
-struct Previews_ShareView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            NavigationView {
-                DebugAnalyticsView()
-                    .environment(\.managedObjectContext, LoggerStore.mock.viewContext)
-            }
-            NavigationView {
-                DebugAnalyticsDetailsView(message: try! LoggerStore.mock.allMessages()[0])
+    struct Previews_ShareView_Previews: PreviewProvider {
+        static var previews: some View {
+            Group {
+                NavigationView {
+                    DebugAnalyticsView()
+                        .environment(\.managedObjectContext, LoggerStore.mock.viewContext)
+                }
+                NavigationView {
+                    DebugAnalyticsDetailsView(message: try! LoggerStore.mock.allMessages()[0])
+                }
             }
         }
     }
-}
 #endif

@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import SwiftUI
 
@@ -9,19 +9,19 @@ struct PlaceholderView: View {
     let title: String
     var subtitle: String?
 
-#if os(tvOS)
-    private let iconSize: CGFloat = 150
-#else
-    private let iconSize: CGFloat = 70
-#endif
+    #if os(tvOS)
+        private let iconSize: CGFloat = 150
+    #else
+        private let iconSize: CGFloat = 70
+    #endif
 
-#if os(macOS)
-    private let maxWidth: CGFloat = .infinity
-#elseif os(tvOS)
-    private let maxWidth: CGFloat = .infinity
-#else
-    private let maxWidth: CGFloat = 280
-#endif
+    #if os(macOS)
+        private let maxWidth: CGFloat = .infinity
+    #elseif os(tvOS)
+        private let maxWidth: CGFloat = .infinity
+    #else
+        private let maxWidth: CGFloat = 280
+    #endif
 
     var body: some View {
         VStack {
@@ -38,14 +38,14 @@ struct PlaceholderView: View {
             }
         }
         .foregroundColor(.secondary)
-        .frame(maxWidth: maxWidth, maxHeight: /*@START_MENU_TOKEN@*/.infinity/*@END_MENU_TOKEN@*/, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
+        .frame(maxWidth: maxWidth, maxHeight: /*@START_MENU_TOKEN@*/ .infinity/*@END_MENU_TOKEN@*/, alignment: /*@START_MENU_TOKEN@*/ .center/*@END_MENU_TOKEN@*/)
     }
 }
 
 #if DEBUG
-struct PlaceholderView_Previews: PreviewProvider {
-    static var previews: some View {
-        PlaceholderView(imageName: "questionmark.folder", title: "Store Unavailable")
+    struct PlaceholderView_Previews: PreviewProvider {
+        static var previews: some View {
+            PlaceholderView(imageName: "questionmark.folder", title: "Store Unavailable")
+        }
     }
-}
 #endif

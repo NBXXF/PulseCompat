@@ -1,12 +1,12 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
-extension LoggerStore {
+public extension LoggerStore {
     /// The store info.
-    public struct Info: Codable, Sendable {
+    struct Info: Codable, Sendable {
         // MARK: Store Info
 
         /// The id of the store.
@@ -102,66 +102,67 @@ private func getAppIcon() -> Data? {
 }
 
 #if os(iOS) || os(tvOS) || os(visionOS)
-import UIKit
+    import UIKit
 
-@MainActor
-func getDeviceId() -> UUID? {
-    UIDevice.current.identifierForVendor
-}
-
-extension LoggerStore.Info.DeviceInfo {
     @MainActor
-static func make() -> LoggerStore.Info.DeviceInfo {
-        let device = UIDevice.current
-        return LoggerStore.Info.DeviceInfo(
-            name: device.name,
-            model: device.model,
-            localizedModel: device.localizedModel,
-            systemName: device.systemName,
-            systemVersion: device.systemVersion
-        )
+    func getDeviceId() -> UUID? {
+        UIDevice.current.identifierForVendor
     }
-}
+
+    extension LoggerStore.Info.DeviceInfo {
+        @MainActor
+        static func make() -> LoggerStore.Info.DeviceInfo {
+            let device = UIDevice.current
+            return LoggerStore.Info.DeviceInfo(
+                name: device.name,
+                model: device.model,
+                localizedModel: device.localizedModel,
+                systemName: device.systemName,
+                systemVersion: device.systemVersion
+            )
+        }
+    }
+
 #elseif os(watchOS)
-import WatchKit
+    import WatchKit
 
-@MainActor
-func getDeviceId() -> UUID? {
-    WKInterfaceDevice.current().identifierForVendor
-}
-
-extension LoggerStore.Info.DeviceInfo {
     @MainActor
-static func make() -> LoggerStore.Info.DeviceInfo {
-        let device = WKInterfaceDevice.current()
-        return LoggerStore.Info.DeviceInfo(
-            name: device.name,
-            model: device.model,
-            localizedModel: device.localizedModel,
-            systemName: device.systemName,
-            systemVersion: device.systemVersion
-        )
+    func getDeviceId() -> UUID? {
+        WKInterfaceDevice.current().identifierForVendor
     }
-}
+
+    extension LoggerStore.Info.DeviceInfo {
+        @MainActor
+        static func make() -> LoggerStore.Info.DeviceInfo {
+            let device = WKInterfaceDevice.current()
+            return LoggerStore.Info.DeviceInfo(
+                name: device.name,
+                model: device.model,
+                localizedModel: device.localizedModel,
+                systemName: device.systemName,
+                systemVersion: device.systemVersion
+            )
+        }
+    }
 #else
-import AppKit
+    import AppKit
 
-extension LoggerStore.Info.DeviceInfo {
-    @MainActor
-static func make() -> LoggerStore.Info.DeviceInfo {
-        return LoggerStore.Info.DeviceInfo(
-            name: Host.current().name ?? "unknown",
-            model: "unknown",
-            localizedModel: "unknown",
-            systemName: "macOS",
-            systemVersion: ProcessInfo().operatingSystemVersionString
-        )
+    extension LoggerStore.Info.DeviceInfo {
+        @MainActor
+        static func make() -> LoggerStore.Info.DeviceInfo {
+            return LoggerStore.Info.DeviceInfo(
+                name: Host.current().name ?? "unknown",
+                model: "unknown",
+                localizedModel: "unknown",
+                systemName: "macOS",
+                systemVersion: ProcessInfo().operatingSystemVersionString
+            )
+        }
     }
-}
 
-@MainActor
-func getDeviceId() -> UUID? {
-    return nil
-}
+    @MainActor
+    func getDeviceId() -> UUID? {
+        return nil
+    }
 
 #endif

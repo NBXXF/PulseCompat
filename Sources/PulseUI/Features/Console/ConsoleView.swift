@@ -1,15 +1,15 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
+import Combine
 import CoreData
 import Pulse
-import Combine
+import SwiftUI
 
-extension ConsoleView {
+public extension ConsoleView {
     /// Initializes the console view.
-    /// 
+    ///
     /// - parameters:
     ///   - store: The store to display. By default, `LoggerStore/shared`.
     ///   - mode: The initial console mode. By default, ``ConsoleMode/all``. If you change
@@ -17,7 +17,7 @@ extension ConsoleView {
     ///   network messages up on appearance.
     ///   - delegate: The delegate that allows you to customize multiple aspects
     ///   of the console view.
-    public init(
+    init(
         store: LoggerStore = .shared,
         mode: ConsoleMode = .all
     ) {

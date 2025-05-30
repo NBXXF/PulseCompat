@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 import Pulse
@@ -43,8 +43,8 @@ extension DateFormatter {
         self.init()
         self.dateStyle = dateStyle
         self.timeStyle = timeStyle
-        self.doesRelativeDateFormatting = isRelative
-        self.locale = Locale(identifier: "en_US")
+        doesRelativeDateFormatting = isRelative
+        locale = Locale(identifier: "en_US")
     }
 }
 
@@ -55,7 +55,7 @@ enum ConsoleFormatter {
         return [
             hasTime ? time(for: message.createdAt) : nil,
             message.logLevel.name.uppercased(),
-            label(for: message)
+            label(for: message),
         ].compactMap { $0 }.joined(separator: separator)
     }
 
@@ -73,7 +73,7 @@ enum ConsoleFormatter {
             task.httpMethod ?? "GET",
             status(for: task, store: store),
             transferSize(for: task),
-            duration(for: task)
+            duration(for: task),
         ].compactMap { $0 }.joined(separator: separator)
     }
 
@@ -85,7 +85,7 @@ enum ConsoleFormatter {
         return [
             transferSize(for: task),
             duration(for: task),
-            progress(for: task)
+            progress(for: task),
         ].compactMap { $0 }.joined(separator: separator)
     }
 
@@ -154,7 +154,7 @@ enum StatusCodeFormatter {
         case 418: return "418 Teapot"
         case 429: return "429 Too many requests"
         case 451: return "451 Unavailable for Legal Reasons"
-        default: return "\(statusCode) \( HTTPURLResponse.localizedString(forStatusCode: statusCode).capitalized)"
+        default: return "\(statusCode) \(HTTPURLResponse.localizedString(forStatusCode: statusCode).capitalized)"
         }
     }
 }

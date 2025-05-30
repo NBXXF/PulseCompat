@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Network
 import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct RemoteLoggerSelectedDeviceView: View {
@@ -24,30 +24,30 @@ struct RemoteLoggerSelectedDeviceView: View {
                 Image(systemName: "lock.fill")
                     .foregroundColor(.separator)
             }
-#if !os(watchOS) && !os(tvOS)
-            Menu(content: {
-                Button("Forget this Device", role: .destructive) {
+            #if !os(watchOS) && !os(tvOS)
+                Menu(content: {
+                    Button("Forget this Device", role: .destructive) {
+                        logger.forgetServer(named: name)
+                    }
+                }, label: {
+                    Image(systemName: "ellipsis.circle")
+                })
+                #if os(macOS)
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                #endif
+            #else
+                Button(role: .destructive, action: {
                     logger.forgetServer(named: name)
-                }
-            }, label: {
-                Image(systemName: "ellipsis.circle")
-            })
-#if os(macOS)
-            .menuStyle(.borderlessButton)
-            .fixedSize()
-#endif
-#else
-            Button(role: .destructive, action: {
-                logger.forgetServer(named: name)
-            }, label: {
-                Image(systemName: "trash")
-                    .foregroundStyle(.red)
-            }).buttonStyle(.plain)
-#endif
+                }, label: {
+                    Image(systemName: "trash")
+                        .foregroundStyle(.red)
+                }).buttonStyle(.plain)
+            #endif
         }
     }
 
-    private func makeStatusView(for state: RemoteLogger.ConnectionState) -> some View {
+    private func makeStatusView(for _: RemoteLogger.ConnectionState) -> some View {
         HStack(spacing: 8) {
             Circle()
                 .frame(width: circleSize, height: circleSize)
@@ -77,7 +77,7 @@ struct RemoteLoggerSelectedDeviceView: View {
 }
 
 #if os(tvOS)
-private let circleSize: CGFloat = 16
+    private let circleSize: CGFloat = 16
 #else
-private let circleSize: CGFloat = 8
+    private let circleSize: CGFloat = 8
 #endif

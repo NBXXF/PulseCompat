@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import Foundation
 
@@ -73,7 +73,7 @@ extension String.CompareOptions {
 extension String {
     /// Returns first range of substring.
     func firstRange(of substring: String, options: String.CompareOptions = []) -> Range<String.Index>? {
-        range(of: substring, options: options, range: startIndex..<endIndex, locale: nil)
+        range(of: substring, options: options, range: startIndex ..< endIndex, locale: nil)
     }
 }
 
@@ -84,7 +84,8 @@ extension String {
         let target = options.kind == .wildcard ? makeRegexForWildcard(target, rule: options.rule) : target
         let options = String.CompareOptions(options)
         while startIndex < endIndex,
-              let range = range(of: target, options: options, range: startIndex..<endIndex, locale: nil) {
+              let range = range(of: target, options: options, range: startIndex ..< endIndex, locale: nil)
+        {
             ranges.append(range)
             startIndex = range.upperBound
         }

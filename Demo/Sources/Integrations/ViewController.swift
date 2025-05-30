@@ -2,10 +2,10 @@
 //
 // Copyright (c) 2020-2023 Alexander Grebenyuk (github.com/kean).
 
-import UIKit
-import PulseUI
 import Pulse
+import PulseUI
 import SwiftUI
+import UIKit
 
 final class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
@@ -26,7 +26,7 @@ final class ViewController: UIViewController, UITableViewDataSource, UITableView
                     let vc = MainViewController(store: .mock)
                     vc.modalPresentationStyle = .fullScreen
                     self.present(vc, animated: true, completion: nil)
-                })
+                }),
             ]),
             MenuSection(title: "Components", footer: "Demonstrates how you can push individual PulseUI screens into an existing navigation (UINavigationController or NavigationView)", items: [
                 MenuItem(title: "ConsoleView", action: { [unowned self] in
@@ -40,7 +40,7 @@ final class ViewController: UIViewController, UITableViewDataSource, UITableView
                 MenuItem(title: "ConsoleView (Network)", action: { [unowned self] in
                     let vc = UIHostingController(rootView: ConsoleView(store: .mock, mode: .network).closeButtonHidden())
                     self.navigationController?.pushViewController(vc, animated: true)
-                })
+                }),
             ]),
             MenuSection(title: "Custom Views", footer: "Custom views into the underlying logger data", items: [
                 MenuItem(title: "User Analytics", action: { [unowned self] in
@@ -48,15 +48,15 @@ final class ViewController: UIViewController, UITableViewDataSource, UITableView
                         .environment(\.managedObjectContext, LoggerStore.mock.viewContext)
                     let vc = UIHostingController(rootView: view)
                     self.navigationController?.pushViewController(vc, animated: true)
-                })
+                }),
             ]),
             MenuSection(title: "Modal", footer: "The same screens, but as a modal view controller", items: [
                 MenuItem(title: "Show Modally", action: { [unowned self] in
                     let vc = ViewController()
                     let navigation = UINavigationController(rootViewController: vc)
                     self.present(navigation, animated: true)
-                })
-            ])
+                }),
+            ]),
         ]
 
         view.addSubview(tableView)
@@ -68,26 +68,26 @@ final class ViewController: UIViewController, UITableViewDataSource, UITableView
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.rightAnchor.constraint(equalTo: view.rightAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableView.leftAnchor.constraint(equalTo: view.leftAnchor)
+            tableView.leftAnchor.constraint(equalTo: view.leftAnchor),
         ])
 
         tableView.dataSource = self
         tableView.delegate = self
     }
 
-    func numberOfSections(in tableView: UITableView) -> Int {
+    func numberOfSections(in _: UITableView) -> Int {
         sections.count
     }
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_: UITableView, numberOfRowsInSection section: Int) -> Int {
         sections[section].items.count
     }
 
-    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    func tableView(_: UITableView, titleForHeaderInSection section: Int) -> String? {
         sections[section].title
     }
 
-    func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    func tableView(_: UITableView, titleForFooterInSection section: Int) -> String? {
         sections[section].footer
     }
 

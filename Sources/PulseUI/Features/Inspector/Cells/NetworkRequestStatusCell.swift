@@ -1,47 +1,47 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct NetworkRequestStatusCell: View {
     let viewModel: NetworkRequestStatusCellModel
 
-#if os(watchOS)
-    var body: some View {
-        HStack(spacing: spacing) {
-            Text(viewModel.status.title)
-                .lineLimit(3)
-                .foregroundColor(viewModel.status.tint)
-            Spacer()
-            detailsView
+    #if os(watchOS)
+        var body: some View {
+            HStack(spacing: spacing) {
+                Text(viewModel.status.title)
+                    .lineLimit(3)
+                    .foregroundColor(viewModel.status.tint)
+                Spacer()
+                detailsView
+            }
+            .font(.headline)
+            .listRowBackground(Color.clear)
         }
-        .font(.headline)
-        .listRowBackground(Color.clear)
-    }
 
-#else
-    var body: some View {
-        HStack(spacing: spacing) {
-            viewModel.status.text
-                .lineLimit(1)
-            Spacer()
-            detailsView
+    #else
+        var body: some View {
+            HStack(spacing: spacing) {
+                viewModel.status.text
+                    .lineLimit(1)
+                Spacer()
+                detailsView
+            }
+            #if os(tvOS)
+            .font(.system(size: 38, weight: .bold))
+            .padding(.top, 16)
+            .padding(.bottom, 16)
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+            .listRowBackground(Color.clear)
+            #elseif os(macOS)
+            .font(.title3.weight(.medium))
+            #else
+            .font(.headline)
+            #endif
         }
-#if os(tvOS)
-        .font(.system(size: 38, weight: .bold))
-        .padding(.top, 16)
-        .padding(.bottom, 16)
-        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
-        .listRowBackground(Color.clear)
-#elseif os(macOS)
-        .font(.title3.weight(.medium))
-#else
-        .font(.headline)
-#endif
-    }
 
     #endif
 
@@ -50,9 +50,9 @@ struct NetworkRequestStatusCell: View {
         if viewModel.isMock {
             MockBadgeView()
         } else {
-#if !os(macOS)
-            viewModel.duration.map(DurationLabel.init)
-#endif
+            #if !os(macOS)
+                viewModel.duration.map(DurationLabel.init)
+            #endif
         }
     }
 }
@@ -63,9 +63,9 @@ struct NetworkRequestStatusCellModel {
     fileprivate let duration: DurationViewModel?
 
     init(task: NetworkTaskEntity, store: LoggerStore?) {
-        self.status = StatusLabelViewModel(task: task, store: store)
-        self.duration = DurationViewModel(task: task)
-        self.isMock = task.isMocked
+        status = StatusLabelViewModel(task: task, store: store)
+        duration = DurationViewModel(task: task)
+        isMock = task.isMocked
     }
 
     init(transaction: NetworkTransactionMetricsEntity) {
@@ -127,25 +127,25 @@ private final class DurationViewModel: ObservableObject {
 }
 
 #if os(tvOS)
-private let spacing: CGFloat = 20
+    private let spacing: CGFloat = 20
 #else
-private let spacing: CGFloat? = nil
+    private let spacing: CGFloat? = nil
 #endif
 
 #if DEBUG
-@available(iOS 15, visionOS 1.0, *)
-struct NetworkRequestStatusCell_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            List {
-                ForEach(MockTask.allEntities, id: \.objectID) { task in
-                    NetworkRequestStatusCell(viewModel: .init(task: task, store: LoggerStore.mock))
+    @available(iOS 15, visionOS 1.0, *)
+    struct NetworkRequestStatusCell_Previews: PreviewProvider {
+        static var previews: some View {
+            NavigationView {
+                List {
+                    ForEach(MockTask.allEntities, id: \.objectID) { task in
+                        NetworkRequestStatusCell(viewModel: .init(task: task, store: LoggerStore.mock))
+                    }
                 }
+                #if os(macOS)
+                .frame(width: 260)
+                #endif
             }
-#if os(macOS)
-            .frame(width: 260)
-#endif
         }
     }
-}
 #endif

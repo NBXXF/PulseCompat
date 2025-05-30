@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
-import Pulse
 import Combine
+import Pulse
+import SwiftUI
 
 @available(iOS 15, visionOS 1.0, *)
 struct ConsoleLabelsSelectionView: View {

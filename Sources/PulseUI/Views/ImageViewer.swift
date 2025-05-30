@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct ImageViewer: View {
     let viewModel: ImagePreviewViewModel
@@ -41,14 +41,16 @@ struct ImagePreviewViewModel {
             originalImageSize = image.size
         } else if context.isResponse {
             if let width = intValue(for: "ResponsePixelWidth"),
-               let height = intValue(for: "ResponsePixelHeight") {
+               let height = intValue(for: "ResponsePixelHeight")
+            {
                 originalImageSize = CGSize(width: width, height: height)
             } else {
                 originalImageSize = nil
             }
         } else {
             if let width = intValue(for: "RequestPixelWidth"),
-               let height = intValue(for: "RequestPixelHeight") {
+               let height = intValue(for: "RequestPixelHeight")
+            {
                 originalImageSize = CGSize(width: width, height: height)
             } else {
                 originalImageSize = nil
@@ -59,7 +61,7 @@ struct ImagePreviewViewModel {
             ("Resolution", originalImageSize.map { "\(Int($0.width)) × \(Int($0.height)) px" }),
             ("Size", ByteCountFormatter.string(fromByteCount: context.originalSize)),
             ("Type", context.contentType?.rawValue),
-            ("Displayed", isShowingOriginal ? "original image" : "preview (original not saved)")
+            ("Displayed", isShowingOriginal ? "original image" : "preview (original not saved)"),
         ]
         if !isShowingOriginal {
             info.append(("Preview Size (Decompressed)", ByteCountFormatter.string(fromByteCount: Int64(data.count))))

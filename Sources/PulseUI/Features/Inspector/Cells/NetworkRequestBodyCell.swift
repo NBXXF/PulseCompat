@@ -1,9 +1,9 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import SwiftUI
 import Pulse
+import SwiftUI
 
 struct NetworkRequestBodyCell: View {
     let viewModel: NetworkRequestBodyCellViewModel
@@ -33,8 +33,8 @@ struct NetworkRequestBodyCellViewModel {
 
     init(task: NetworkTaskEntity) {
         let size = task.requestBodySize
-        self.details = size > 0 ? ByteCountFormatter.string(fromByteCount: size) : "Empty"
-        self.isEnabled = size > 0
-        self.detailsViewModel = NetworkInspectorRequestBodyViewModel(task: task)
+        details = size > 0 ? ByteCountFormatter.string(fromByteCount: size) : "Empty"
+        isEnabled = size > 0
+        detailsViewModel = NetworkInspectorRequestBodyViewModel(task: task)
     }
 }

@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import CoreData
 import Foundation
 import Pulse
 import SwiftUI
-import CoreData
 
 enum LoggerEntity {
     /// Regular log, not task attached.
@@ -28,7 +28,7 @@ enum LoggerEntity {
     }
 
     var task: NetworkTaskEntity? {
-        if case .task(let task) = self { return task }
+        if case let .task(task) = self { return task }
         return nil
     }
 }
@@ -88,46 +88,47 @@ extension LoggerSessionEntity {
 private let compactDateFormatter = DateFormatter(dateStyle: .none, timeStyle: .medium)
 
 #if os(watchOS)
-private let fullDateFormatter = DateFormatter(dateStyle: .short, timeStyle: .short, isRelative: true)
+    private let fullDateFormatter = DateFormatter(dateStyle: .short, timeStyle: .short, isRelative: true)
 #else
-private let fullDateFormatter = DateFormatter(dateStyle: .medium, timeStyle: .medium, isRelative: true)
+    private let fullDateFormatter = DateFormatter(dateStyle: .medium, timeStyle: .medium, isRelative: true)
 #endif
 
 private let possibleFormatters: [DateFormatter] = [
     fullDateFormatter,
     DateFormatter(dateStyle: .long, timeStyle: .none),
-    DateFormatter(dateStyle: .short, timeStyle: .none)
+    DateFormatter(dateStyle: .short, timeStyle: .none),
 ]
 
 #if !os(watchOS)
 
-extension NetworkTaskEntity {
-    func cURLDescription() -> String {
-        guard let request = currentRequest ?? originalRequest,
-              let url = request.url else {
-            return "$ curl command generation failed"
+    extension NetworkTaskEntity {
+        func cURLDescription() -> String {
+            guard let request = currentRequest ?? originalRequest,
+                  let url = request.url
+            else {
+                return "$ curl command generation failed"
+            }
+
+            var components = ["curl -v"]
+
+            components.append("-X \(request.httpMethod ?? "GET")")
+
+            for header in request.headers {
+                let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
+                components.append("-H \"\(header.key): \(escapedValue)\"")
+            }
+
+            if let httpBodyData = requestBody?.data {
+                let httpBody = String(decoding: httpBodyData, as: UTF8.self)
+                var escapedBody = httpBody.replacingOccurrences(of: "\\\"", with: "\\\\\"")
+                escapedBody = escapedBody.replacingOccurrences(of: "\"", with: "\\\"")
+                components.append("-d \"\(escapedBody)\"")
+            }
+
+            components.append("\"\(url)\"")
+
+            return components.joined(separator: " \\\n\t")
         }
-
-        var components = ["curl -v"]
-
-        components.append("-X \(request.httpMethod ?? "GET")")
-
-        for header in request.headers {
-            let escapedValue = header.value.replacingOccurrences(of: "\"", with: "\\\"")
-            components.append("-H \"\(header.key): \(escapedValue)\"")
-        }
-
-        if let httpBodyData = requestBody?.data {
-            let httpBody = String(decoding: httpBodyData, as: UTF8.self)
-            var escapedBody = httpBody.replacingOccurrences(of: "\\\"", with: "\\\\\"")
-            escapedBody = escapedBody.replacingOccurrences(of: "\"", with: "\\\"")
-            components.append("-d \"\(escapedBody)\"")
-        }
-
-        components.append("\"\(url)\"")
-
-        return components.joined(separator: " \\\n\t")
     }
-}
 
 #endif

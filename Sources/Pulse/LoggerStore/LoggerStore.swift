@@ -1,10 +1,10 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import CoreData
 import Combine
+import CoreData
+import Foundation
 
 /// Persistently stores logs, network requests, and response blobs.
 public final class LoggerStore: @unchecked Sendable, Identifiable {
@@ -23,7 +23,7 @@ public final class LoggerStore: @unchecked Sendable, Identifiable {
     public var configuration: Configuration
 
     /// Current session or the latest session in case of an archive.
-    private(set) public var session: Session = .current
+    public private(set) var session: Session = .current
 
     /// Returns the Core Data container associated with the store.
     public let container: NSPersistentContainer
@@ -45,6 +45,7 @@ public final class LoggerStore: @unchecked Sendable, Identifiable {
     private var manifest: Manifest {
         didSet { try? save(manifest) }
     }
+
     private var sessionIndex: Int64 = 0
     private let blobsURL: URL
     private let manifestURL: URL
@@ -117,16 +118,16 @@ public final class LoggerStore: @unchecked Sendable, Identifiable {
     ///   and ``LoggerStore/Options-swift.struct/sweep`` options.
     ///   - configuration: The store configuration specifying size limit, etc.
     public init(storeURL: URL, options: Options = [.create, .sweep], configuration: Configuration = .init()) throws {
-        var isDirectory: ObjCBool = ObjCBool(false)
+        var isDirectory = ObjCBool(false)
         let fileExists = Files.fileExists(atPath: storeURL.path, isDirectory: &isDirectory)
         guard (fileExists && isDirectory.boolValue) || options.contains(.create) else {
             throw LoggerStore.Error.fileDoesntExist
         }
 
         self.storeURL = storeURL
-        self.databaseURL = storeURL.appending(filename: databaseFilename)
-        self.blobsURL = storeURL.appending(directory: blobsDirectoryName)
-        self.manifestURL = storeURL.appending(filename: manifestFilename)
+        databaseURL = storeURL.appending(filename: databaseFilename)
+        blobsURL = storeURL.appending(directory: blobsDirectoryName)
+        manifestURL = storeURL.appending(filename: manifestFilename)
 
         self.options = options
         self.configuration = configuration
@@ -153,12 +154,12 @@ public final class LoggerStore: @unchecked Sendable, Identifiable {
                 // Updating from Pulse 1.0 that didn't have a manifest file
                 try? LoggerStore.removePreviousStore(at: storeURL)
             }
-            self.manifest = Manifest(storeId: UUID(), version: .currentStoreVersion)
+            manifest = Manifest(storeId: UUID(), version: .currentStoreVersion)
         }
 
-        self.container = LoggerStore.makeContainer(databaseURL: databaseURL, options: options)
+        container = LoggerStore.makeContainer(databaseURL: databaseURL, options: options)
         try container.loadStore()
-        self.backgroundContext = container.newBackgroundContext()
+        backgroundContext = container.newBackgroundContext()
 
         try postInitialization()
     }
@@ -229,14 +230,14 @@ public final class LoggerStore: @unchecked Sendable, Identifiable {
     /// This is a safe fallback for the initialization of the shared store.
     init(inMemoryStore storeURL: URL) {
         self.storeURL = storeURL
-        self.blobsURL = storeURL.appending(directory: blobsDirectoryName)
-        self.manifestURL = storeURL.appending(directory: manifestFilename)
-        self.databaseURL = storeURL.appending(directory: databaseFilename)
-        self.container = .inMemoryReadonlyContainer
-        self.backgroundContext = container.newBackgroundContext()
-        self.manifest = .init(storeId: UUID(), version: .currentStoreVersion)
-        self.options = []
-        self.configuration = .init()
+        blobsURL = storeURL.appending(directory: blobsDirectoryName)
+        manifestURL = storeURL.appending(directory: manifestFilename)
+        databaseURL = storeURL.appending(directory: databaseFilename)
+        container = .inMemoryReadonlyContainer
+        backgroundContext = container.newBackgroundContext()
+        manifest = .init(storeId: UUID(), version: .currentStoreVersion)
+        options = []
+        configuration = .init()
     }
 
     private static func makeContainer(databaseURL: URL, options: Options) -> NSPersistentContainer {
@@ -344,10 +345,10 @@ extension LoggerStore {
 
     private func _handle(_ event: Event) {
         switch event {
-        case .messageStored(let event): process(event)
-        case .networkTaskCreated(let event): process(event)
-        case .networkTaskProgressUpdated(let event): process(event)
-        case .networkTaskCompleted(let event): process(event)
+        case let .messageStored(event): process(event)
+        case let .networkTaskCreated(event): process(event)
+        case let .networkTaskProgressUpdated(event): process(event)
+        case let .networkTaskCompleted(event): process(event)
         }
     }
 
@@ -464,8 +465,9 @@ extension LoggerStore {
         entity.response = event.response.map(makeResponse)
         entity.rawMetadata = {
             guard let responseBody = event.responseBody,
-               responseContentType?.isImage ?? false,
-                  let metadata = Graphics.makeMetadata(from: responseBody) else {
+                  responseContentType?.isImage ?? false,
+                  let metadata = Graphics.makeMetadata(from: responseBody)
+            else {
                 return nil
             }
             return KeyValueEncoding.encodeKeyValuePairs(metadata)
@@ -498,7 +500,8 @@ extension LoggerStore {
             return data
         }
         guard let thumbnail = Graphics.makeThumbnail(from: data, targetSize: 512),
-              let data = Graphics.encode(thumbnail) else {
+              let data = Graphics.encode(thumbnail)
+        else {
             return data
         }
         return data
@@ -739,28 +742,28 @@ extension LoggerStore {
         do {
             try backgroundContext.save()
         } catch {
-#if DEBUG
-            debugPrint(error)
-#endif
+            #if DEBUG
+                debugPrint(error)
+            #endif
         }
     }
 }
 
 // MARK: - LoggerStore (Accessing Messages)
 
-extension LoggerStore {
+public extension LoggerStore {
     /// Returns all recorded messages, least recent messages come first.
-    public func allMessages() throws -> [LoggerMessageEntity] {
+    func allMessages() throws -> [LoggerMessageEntity] {
         try viewContext.fetch(LoggerMessageEntity.self, sortedBy: \.createdAt)
     }
 
     /// Returns all recorded network requests, least recent messages come first.
-    public func allTasks() throws -> [NetworkTaskEntity] {
+    func allTasks() throws -> [NetworkTaskEntity] {
         try viewContext.fetch(NetworkTaskEntity.self, sortedBy: \.createdAt)
     }
 
     /// Removes sessions with the given IDs.
-    public func removeSessions(withIDs sessionIDs: Set<UUID>) {
+    func removeSessions(withIDs sessionIDs: Set<UUID>) {
         perform { _ in
             try? self._removeSessions(withIDs: sessionIDs)
         }
@@ -782,7 +785,7 @@ extension LoggerStore {
     }
 
     /// Removes all of the previously recorded messages.
-    public func removeAll() {
+    func removeAll() {
         perform { _ in self._removeAll() }
     }
 
@@ -807,7 +810,7 @@ extension LoggerStore {
     /// Safely closes the database and removes all information from the store.
     ///
     /// - note: After the store is destroyed, you can't write any new messages to it.
-    public func destroy() throws {
+    func destroy() throws {
         let coordinator = container.persistentStoreCoordinator
         for store in coordinator.persistentStores {
             if let storeURL = store.url {
@@ -818,7 +821,7 @@ extension LoggerStore {
     }
 
     /// Safely closes the database.
-    public func close() throws {
+    func close() throws {
         for store in container.persistentStoreCoordinator.persistentStores {
             try container.persistentStoreCoordinator.remove(store)
         }
@@ -971,7 +974,7 @@ extension LoggerStore {
                         if let data = try? Data(contentsOf: blobURL) {
                             objects.append([
                                 "key": blobURL.lastPathComponent,
-                                "data": data
+                                "data": data,
                             ])
                             totalSize += Int64(data.count)
                         }
@@ -1134,7 +1137,7 @@ extension LoggerStore {
     public func info() async throws -> Info {
         let deviceInfo = await LoggerStore.Info.DeviceInfo.make()
         return try await container.performBackgroundTask { context in
-            return try self._info(in: context, deviceInfo: deviceInfo)
+            try self._info(in: context, deviceInfo: deviceInfo)
         }
     }
 
@@ -1145,7 +1148,7 @@ extension LoggerStore {
         let taskCount = try context.count(for: NetworkTaskEntity.self)
         let blobCount = try context.count(for: LoggerBlobHandleEntity.self)
 
-        return Info(
+        return try Info(
             storeId: manifest.storeId,
             storeVersion: manifest.version.description,
             creationDate: (databaseAttributes[.creationDate] as? Date) ?? Date(),
@@ -1153,9 +1156,9 @@ extension LoggerStore {
             messageCount: messageCount - taskCount,
             taskCount: taskCount,
             blobCount: blobCount,
-            totalStoreSize: try storeURL.directoryTotalSize(),
-            blobsSize: try getBlobsSize(),
-            blobsDecompressedSize: try getBlobsSize(isDecompressed: true),
+            totalStoreSize: storeURL.directoryTotalSize(),
+            blobsSize: getBlobsSize(),
+            blobsDecompressedSize: getBlobsSize(isDecompressed: true),
             appInfo: .make(),
             deviceInfo: deviceInfo
         )
@@ -1186,8 +1189,8 @@ extension LoggerStore {
 
 // MARK: - LoggerStore (Error)
 
-extension LoggerStore {
-    public enum Error: Swift.Error, LocalizedError {
+public extension LoggerStore {
+    enum Error: Swift.Error, LocalizedError {
         case fileDoesntExist
         case storeInvalid
         case unsupportedVersion(version: String, minimumSupportedVersion: String)
@@ -1221,7 +1224,8 @@ extension LoggerStore {
 
         init?(url: URL) {
             guard let data = try? Data(contentsOf: url),
-                  let manifest = try? JSONDecoder().decode(Manifest.self, from: data) else {
+                  let manifest = try? JSONDecoder().decode(Manifest.self, from: data)
+            else {
                 return nil
             }
             self = manifest

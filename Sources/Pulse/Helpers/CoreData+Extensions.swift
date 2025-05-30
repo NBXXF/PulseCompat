@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import CoreData
 
@@ -11,7 +11,7 @@ extension NSManagedObjectContext {
         return try fetch(request)
     }
 
-    func fetch<T: NSManagedObject, Value>(_ entity: T.Type, sortedBy keyPath: KeyPath<T, Value>, ascending: Bool = true, _ configure: (NSFetchRequest<T>) -> Void = { _ in }) throws -> [T] {
+    func fetch<T: NSManagedObject, Value>(_ entity: T.Type, sortedBy keyPath: KeyPath<T, Value>, ascending: Bool = true, _: (NSFetchRequest<T>) -> Void = { _ in }) throws -> [T] {
         try fetch(entity) {
             $0.sortDescriptors = [NSSortDescriptor(keyPath: keyPath, ascending: ascending)]
         }
@@ -81,7 +81,7 @@ extension NSPersistentStoreCoordinator {
             // Disable write-ahead logging. Benefit: the entire store will be
             // contained in a single file. No need to handle -wal/-shm files.
             // https://developer.apple.com/library/content/qa/qa1809/_index.html
-             NSSQLitePragmasOption: ["journal_mode": "OFF"]
+            NSSQLitePragmasOption: ["journal_mode": "OFF"],
         ]
 
         try backupCoordinator.migratePersistentStore(intermediateStore, to: url, options: backupStoreOptions, withType: NSSQLiteStoreType)
@@ -91,8 +91,8 @@ extension NSPersistentStoreCoordinator {
 extension NSEntityDescription {
     convenience init<T>(class customClass: T.Type) where T: NSManagedObject {
         self.init()
-        self.name = String(describing: customClass) // e.g. `LoggerMessageEntity`
-        self.managedObjectClassName = T.self.description() // e.g. `Pulse.LoggerMessageEntity`
+        name = String(describing: customClass) // e.g. `LoggerMessageEntity`
+        managedObjectClassName = T.description() // e.g. `Pulse.LoggerMessageEntity`
     }
 }
 
@@ -100,7 +100,7 @@ extension NSAttributeDescription {
     convenience init(name: String, type: NSAttributeType, _ configure: (NSAttributeDescription) -> Void = { _ in }) {
         self.init()
         self.name = name
-        self.attributeType = type
+        attributeType = type
         configure(self)
     }
 }
@@ -114,18 +114,19 @@ extension NSRelationshipDescription {
     convenience init(name: String,
                      type: RelationshipType,
                      deleteRule: NSDeleteRule = .cascadeDeleteRule,
-                     entity: NSEntityDescription) {
+                     entity: NSEntityDescription)
+    {
         self.init()
         self.name = name
         self.deleteRule = deleteRule
-        self.destinationEntity = entity
+        destinationEntity = entity
         switch type {
         case .oneToMany:
-            self.maxCount = 0
-            self.minCount = 0
-        case .oneToOne(let isOptional):
-            self.maxCount = 1
-            self.minCount = isOptional ? 0 : 1
+            maxCount = 0
+            minCount = 0
+        case let .oneToOne(isOptional):
+            maxCount = 1
+            minCount = isOptional ? 0 : 1
         }
     }
 }
@@ -135,7 +136,7 @@ enum KeyValueEncoding {
         var output = ""
         let sorted = (pairs ?? [:]).sorted { $0.key < $1.key }
         for (name, value) in sorted {
-            if !output.isEmpty { output.append("\n")}
+            if !output.isEmpty { output.append("\n") }
             let name = sanitize ? name.replacingOccurrences(of: ":", with: "") : name
             let value = sanitize ? String(value.filter { !$0.isWhitespace }) : value
             output.append("\(name): \(value)")

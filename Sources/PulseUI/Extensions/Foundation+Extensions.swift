@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
+import Combine
 import CommonCrypto
 import CoreData
-import Combine
+import Foundation
 
 extension Character {
     init?(_ code: unichar) {
@@ -27,7 +27,7 @@ extension AttributedString {
     mutating func append(_ string: String, _ configure: (inout AttributeContainer) -> Void) {
         var attributes = AttributeContainer()
         configure(&attributes)
-        self.append(AttributedString(string, attributes: attributes))
+        append(AttributedString(string, attributes: attributes))
     }
 }
 

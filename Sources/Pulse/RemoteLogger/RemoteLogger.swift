@@ -1,12 +1,12 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
+import Combine
 import Foundation
 import Network
-import Combine
-import SwiftUI
 import OSLog
+import SwiftUI
 
 /// Connects to the remote server and sends logs remotely. In the current version,
 /// a server is a Pulse Pro app for macOS).
@@ -96,9 +96,9 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
 
         public var errorDescription: String? {
             switch self {
-            case .network(let error):
+            case let .network(error):
                 return error.localizedDescription
-            case .unknown(let isProtected):
+            case let .unknown(isProtected):
                 return "Connection failed. Please\(isProtected ? " verify the password and" : "") try again."
             }
         }
@@ -142,18 +142,18 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
 
     private init() {
         let isLogEnabled = UserDefaults.standard.bool(forKey: "com.github.kean.pulse.debug")
-        self.log = isLogEnabled ? OSLog(subsystem: "com.github.kean.pulse", category: "RemoteLogger") : .disabled
+        log = isLogEnabled ? OSLog(subsystem: "com.github.kean.pulse", category: "RemoteLogger") : .disabled
 
-        self.knownServers = getKnownServers()
+        knownServers = getKnownServers()
 
         os_log("Did init with known servers: %{private}@", log: log, knownServers.debugDescription)
 
         // Migrate to version 4
         if !preferredServer.isEmpty, knownServers.isEmpty {
             os_log("Did migrate preferred server: %{private}@", log: log, preferredServer)
-            self.knownServers = [preferredServer]
-            self.saveKnownServers()
-            self.preferredServer = ""
+            knownServers = [preferredServer]
+            saveKnownServers()
+            preferredServer = ""
         }
     }
 
@@ -224,10 +224,10 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
         browserError = nil
 
         switch newState {
-        case .waiting(let error):
+        case let .waiting(error):
             os_log("Browser waiting with error: %{public}@", log: log, type: .error, error.debugDescription)
             browserError = error
-        case .failed(let error):
+        case let .failed(error):
             os_log("Browser failed with error: %{public}@", log: log, type: .error, error.debugDescription)
             browserError = error
             scheduleBrowserRetry()
@@ -268,8 +268,9 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
             servers[server.name!] = server
         }
 
-        guard let name = self.knownServers.first(where: { servers[$0] != nil }),
-              let server = servers[name] else {
+        guard let name = knownServers.first(where: { servers[$0] != nil }),
+              let server = servers[name]
+        else {
             return
         }
 
@@ -328,7 +329,7 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
 
     private func connectionDidTimeout(isProtected: Bool) {
         os_log("Connection did timeout", log: log)
-        connectionCompletion?(.failure(self.connectionError ?? .unknown(isProtected: isProtected)))
+        connectionCompletion?(.failure(connectionError ?? .unknown(isProtected: isProtected)))
         connectionCompletion = nil
         disconnect()
     }
@@ -366,7 +367,7 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
         }
         connection.delegate = self
 
-        self.connectionState = .connecting
+        connectionState = .connecting
         self.connection = connection
 
         connection.start()
@@ -374,16 +375,16 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
 
     // MARK: RemoteLoggerConnectionDelegate
 
-    func connection(_ connection: Connection, didChangeState newState: NWConnection.State) {
+    func connection(_: Connection, didChangeState newState: NWConnection.State) {
         os_log("Connection did change state to %{public}@", log: log, "\(newState)")
 
         switch newState {
         case .ready:
             handshakeWithServer()
-        case .waiting(let error):
+        case let .waiting(error):
             os_log("Connection failed with error: %{public}@", log: log, type: .error, error.debugDescription)
             connectionError = nil
-        case .failed(let error):
+        case let .failed(error):
             os_log("Connection failed with error: %{public}@", log: log, type: .error, error.debugDescription)
             connectionError = .network(error)
             connectionState = .disconnected
@@ -393,15 +394,15 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
         }
     }
 
-    func connection(_ connection: Connection, didReceiveEvent event: Connection.Event) {
+    func connection(_: Connection, didReceiveEvent event: Connection.Event) {
         switch event {
-        case .packet(let packet):
+        case let .packet(packet):
             do {
                 try didReceiveMessage(packet: packet)
             } catch {
                 os_log("Failed to decode packet: %{public}@", log: log, type: .error, "\(error)")
             }
-        case .error(let error):
+        case let .error(error):
             os_log("Connection received error while receiving data: %{public}@", log: log, type: .error, "\(error)")
             scheduleConnectionRetry()
         case .completed:
@@ -409,7 +410,7 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
         }
     }
 
-    // MARK: 
+    // MARK:
 
     /// Returns passcode for the sever with the given name.
     public func getPasscode(forServerNamed name: String) -> String? {
@@ -471,7 +472,7 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
             isLoggingPaused = true
         case .resume:
             isLoggingPaused = false
-            for event in (buffer ?? []) {
+            for event in buffer ?? [] {
                 send(event: event)
             }
         case .ping:
@@ -542,7 +543,8 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
         connectionRetryItem = nil
 
         if let server = selectedServerName,
-           let server = servers.first(where: { $0.name == server }) {
+           let server = servers.first(where: { $0.name == server })
+        {
             openConnection(to: server, passcode: selectedServerName.flatMap(getPasscode))
         } else {
             os_log("Selected serve no longer discoverable", log: log)
@@ -629,13 +631,13 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
 
     private func send(event: LoggerStore.Event) {
         switch event {
-        case .messageStored(let message):
+        case let .messageStored(message):
             connection?.send(code: .storeEventMessageStored, entity: message)
-        case .networkTaskCreated(let event):
+        case let .networkTaskCreated(event):
             connection?.send(code: .storeEventNetworkTaskCreated, entity: event)
-        case .networkTaskProgressUpdated(let event):
+        case let .networkTaskProgressUpdated(event):
             connection?.send(code: .storeEventNetworkTaskProgressUpdated, entity: event)
-        case .networkTaskCompleted(let message):
+        case let .networkTaskCompleted(message):
             do {
                 let data = try RemoteLogger.PacketNetworkMessage.encode(message)
                 connection?.send(code: .storeEventNetworkTaskCompleted, data: data)
@@ -673,15 +675,14 @@ public final class RemoteLogger: ObservableObject, RemoteLoggerConnectionDelegat
     // MARK: Persistence
 
     private func getKnownServers() -> [String] {
-        let data = self.savedKnownServers.data(using: .utf8) ?? Data()
+        let data = savedKnownServers.data(using: .utf8) ?? Data()
         return (try? JSONDecoder().decode([String].self, from: data)) ?? []
     }
 
     private func saveKnownServers() {
         guard let data = try? JSONEncoder().encode(knownServers) else { return }
-        self.savedKnownServers = String(data: data, encoding: .utf8) ?? "[]"
+        savedKnownServers = String(data: data, encoding: .utf8) ?? "[]"
     }
-
 }
 
 // MARK: - Helpers
@@ -699,7 +700,7 @@ private func getFallbackDeviceId() -> UUID {
 private extension NWBrowser.Result {
     var name: String? {
         switch endpoint {
-        case .service(let name, _, _, _):
+        case let .service(name, _, _, _):
             return name
         default:
             return nil
@@ -708,7 +709,7 @@ private extension NWBrowser.Result {
 
     var isProtected: Bool {
         switch metadata {
-        case .bonjour(let record):
+        case let .bonjour(record):
             return record["protected"].map { Bool($0) } == true
         case .none:
             return false

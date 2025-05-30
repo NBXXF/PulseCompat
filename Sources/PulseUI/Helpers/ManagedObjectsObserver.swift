@@ -1,11 +1,11 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
-import Foundation
-import CoreData
-import Pulse
 import Combine
+import CoreData
+import Foundation
+import Pulse
 import SwiftUI
 
 final class ManagedObjectsObserver<T: NSManagedObject>: NSObject, NSFetchedResultsControllerDelegate {
@@ -15,8 +15,9 @@ final class ManagedObjectsObserver<T: NSManagedObject>: NSObject, NSFetchedResul
 
     init(request: NSFetchRequest<T>,
          context: NSManagedObjectContext,
-         cacheName: String? = nil) {
-        self.controller = NSFetchedResultsController(fetchRequest: request, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: cacheName)
+         cacheName: String? = nil)
+    {
+        controller = NSFetchedResultsController(fetchRequest: request, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: cacheName)
         super.init()
 
         try? controller.performFetch()
@@ -25,8 +26,8 @@ final class ManagedObjectsObserver<T: NSManagedObject>: NSObject, NSFetchedResul
         controller.delegate = self
     }
 
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        objects = self.controller.fetchedObjects ?? []
+    func controllerDidChangeContent(_: NSFetchedResultsController<NSFetchRequestResult>) {
+        objects = controller.fetchedObjects ?? []
     }
 }
 

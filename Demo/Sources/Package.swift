@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    platforms: [ ],
+    platforms: [],
     products: [],
     targets: [],
 )

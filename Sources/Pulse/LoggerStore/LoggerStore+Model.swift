@@ -1,12 +1,12 @@
 // The MIT License (MIT)
 //
-// Copyright (c) 2020-2024 Alexander Grebenyuk (github.com/kean).
+// 
 
 import CoreData
 
 extension LoggerStore {
     /// Returns Core Data model used by the store.
-    /// 
+    ///
     /// - warning: Model has to be loaded only once.
     static let model: NSManagedObjectModel = {
         typealias Entity = NSEntityDescription
@@ -26,7 +26,7 @@ extension LoggerStore {
             Attribute(name: "id", type: .UUIDAttributeType),
             Attribute(name: "createdAt", type: .dateAttributeType),
             Attribute(name: "version", type: .stringAttributeType) { $0.isOptional = true },
-            Attribute(name: "build", type: .stringAttributeType) { $0.isOptional = true }
+            Attribute(name: "build", type: .stringAttributeType) { $0.isOptional = true },
         ]
 
         message.properties = [
@@ -40,7 +40,7 @@ extension LoggerStore {
             Attribute(name: "line", type: .integer32AttributeType),
             Attribute(name: "rawMetadata", type: .stringAttributeType),
             Attribute(name: "label", type: .stringAttributeType),
-            Relationship(name: "task", type: .oneToOne(isOptional: true), entity: task)
+            Relationship(name: "task", type: .oneToOne(isOptional: true), entity: task),
         ]
 
         task.properties = [
@@ -74,7 +74,7 @@ extension LoggerStore {
             Relationship(name: "message", type: .oneToOne(), entity: message),
             Relationship(name: "requestBody", type: .oneToOne(isOptional: true), deleteRule: .noActionDeleteRule, entity: blob),
             Relationship(name: "responseBody", type: .oneToOne(isOptional: true), deleteRule: .noActionDeleteRule, entity: blob),
-            Relationship(name: "progress", type: .oneToOne(isOptional: true), entity: progress)
+            Relationship(name: "progress", type: .oneToOne(isOptional: true), entity: progress),
         ]
 
         request.properties = [
@@ -87,17 +87,17 @@ extension LoggerStore {
             Attribute(name: "httpShouldHandleCookies", type: .booleanAttributeType),
             Attribute(name: "httpShouldUsePipelining", type: .booleanAttributeType),
             Attribute(name: "timeoutInterval", type: .integer32AttributeType),
-            Attribute(name: "rawCachePolicy", type: .integer16AttributeType)
+            Attribute(name: "rawCachePolicy", type: .integer16AttributeType),
         ]
 
         response.properties = [
             Attribute(name: "statusCode", type: .integer16AttributeType),
-            Attribute(name: "httpHeaders", type: .stringAttributeType)
+            Attribute(name: "httpHeaders", type: .stringAttributeType),
         ]
 
         progress.properties = [
             Attribute(name: "completedUnitCount", type: .integer64AttributeType),
-            Attribute(name: "totalUnitCount", type: .integer64AttributeType)
+            Attribute(name: "totalUnitCount", type: .integer64AttributeType),
         ]
 
         transaction.properties = [
@@ -134,7 +134,7 @@ extension LoggerStore {
             Attribute(name: "requestBodyBytesSent", type: .integer64AttributeType),
             Attribute(name: "responseHeaderBytesReceived", type: .integer64AttributeType),
             Attribute(name: "responseBodyBytesAfterDecoding", type: .integer64AttributeType),
-            Attribute(name: "responseBodyBytesReceived", type: .integer64AttributeType)
+            Attribute(name: "responseBodyBytesReceived", type: .integer64AttributeType),
         ]
 
         blob.properties = [
@@ -144,7 +144,7 @@ extension LoggerStore {
             Attribute(name: "linkCount", type: .integer32AttributeType),
             Attribute(name: "rawContentType", type: .stringAttributeType),
             Attribute(name: "inlineData", type: .binaryDataAttributeType),
-            Attribute(name: "isUncompressed", type: .booleanAttributeType)
+            Attribute(name: "isUncompressed", type: .booleanAttributeType),
         ]
 
         let model = NSManagedObjectModel()

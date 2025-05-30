@@ -3,8 +3,8 @@
 // Copyright (c) 2020-2023 Alexander Grebenyuk (github.com/kean).
 
 import Foundation
-import PulseUI
 import Pulse
+import PulseUI
 
 // Uses `URLSessionProxyDelegate` to automatically log the requests.
 final class URLSessionAutomatedIntegration {
@@ -38,7 +38,8 @@ private final class SessionDelegate: NSObject, URLSessionDataDelegate {
     func loadData(with request: URLRequest,
                   session: URLSession,
                   didReceiveData: @escaping (Data, URLResponse) -> Void,
-                  completion: @escaping (Error?) -> Void) -> URLSessionDataTask {
+                  completion: @escaping (Error?) -> Void) -> URLSessionDataTask
+    {
         let task = session.dataTask(with: request)
         let handler = _Handler(didReceiveData: didReceiveData, completion: completion)
         session.delegateQueue.addOperation { // `URLSession` is configured to use this same queue
@@ -50,14 +51,15 @@ private final class SessionDelegate: NSObject, URLSessionDataDelegate {
 
     // MARK: URLSessionDelegate
 
-    func urlSession(_ session: URLSession,
-                    dataTask: URLSessionDataTask,
-                    didReceive response: URLResponse,
-                    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+    func urlSession(_: URLSession,
+                    dataTask _: URLSessionDataTask,
+                    didReceive _: URLResponse,
+                    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void)
+    {
         completionHandler(.allow)
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         assert(task is URLSessionDataTask)
         guard let handler = handlers[task] else {
             return
@@ -68,7 +70,7 @@ private final class SessionDelegate: NSObject, URLSessionDataDelegate {
 
     // MARK: URLSessionDataDelegate
 
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    func urlSession(_: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         guard let handler = handlers[dataTask], let response = dataTask.response else {
             return
         }

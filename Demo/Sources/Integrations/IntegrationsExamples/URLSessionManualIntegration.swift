@@ -3,8 +3,8 @@
 // Copyright (c) 2020-2023 Alexander Grebenyuk (github.com/kean).
 
 import Foundation
-import PulseUI
 import Pulse
+import PulseUI
 
 // If you want to avoid using swizzling and proxies, just implement the following
 // URLSession delegate methods.
@@ -22,7 +22,8 @@ final class URLSessionManualIntegration {
     /// Loads data with the given request.
     func loadData(with request: URLRequest,
                   didReceiveData: @escaping (Data, URLResponse) -> Void,
-                  completion: @escaping (Error?) -> Void) -> URLSessionDataTask {
+                  completion: @escaping (Error?) -> Void) -> URLSessionDataTask
+    {
         delegate.loadData(with: request, session: session, didReceiveData: didReceiveData, completion: completion)
     }
 }
@@ -39,7 +40,8 @@ private final class SessionDelegate: NSObject, URLSessionDataDelegate {
     func loadData(with request: URLRequest,
                   session: URLSession,
                   didReceiveData: @escaping (Data, URLResponse) -> Void,
-                  completion: @escaping (Error?) -> Void) -> URLSessionDataTask {
+                  completion: @escaping (Error?) -> Void) -> URLSessionDataTask
+    {
         let task = session.dataTask(with: request)
         let handler = _Handler(didReceiveData: didReceiveData, completion: completion)
         session.delegateQueue.addOperation { // `URLSession` is configured to use this same queue
@@ -52,15 +54,16 @@ private final class SessionDelegate: NSObject, URLSessionDataDelegate {
 
     // MARK: URLSessionDelegate
 
-    func urlSession(_ session: URLSession,
+    func urlSession(_: URLSession,
                     dataTask: URLSessionDataTask,
                     didReceive response: URLResponse,
-                    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+                    completionHandler: @escaping (URLSession.ResponseDisposition) -> Void)
+    {
         logger.logDataTask(dataTask, didReceive: response)
         completionHandler(.allow)
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func urlSession(_: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         assert(task is URLSessionDataTask)
         logger.logTask(task, didCompleteWithError: error)
         guard let handler = handlers[task] else {
@@ -72,7 +75,7 @@ private final class SessionDelegate: NSObject, URLSessionDataDelegate {
 
     // MARK: URLSessionDataDelegate
 
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+    func urlSession(_: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         logger.logDataTask(dataTask, didReceive: data)
 
         guard let handler = handlers[dataTask], let response = dataTask.response else {
@@ -82,7 +85,7 @@ private final class SessionDelegate: NSObject, URLSessionDataDelegate {
         handler.didReceiveData(data, response)
     }
 
-    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+    func urlSession(_: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         logger.logTask(task, didFinishCollecting: metrics)
     }
 
