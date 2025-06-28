@@ -150,9 +150,9 @@ public final class FileLogHandler: LogHandler, @unchecked Sendable {
         }
     }
 
-    /// 立即刷新缓存到文件（同步）
+    /// 立即刷新缓存到文件
     public func flush() {
-        queue.sync {
+        queue.async {
             self.flushBuffer()
         }
     }
@@ -191,11 +191,14 @@ public final class FileLogHandler: LogHandler, @unchecked Sendable {
             buffer.removeAll(keepingCapacity: true)
         } catch {
             #if DEBUG
-                print("🛑 AsyncRotatingFileLogHandler flush failed: \(error)")
+            print("🛑 AsyncRotatingFileLogHandler flush failed: \(error)")
             #endif
-            // 可考虑记录错误日志或重试逻辑
+            // 关闭文件并尝试重新打开避免死锁
+            closeCurrentFile()
+            currentFileHandle = Self.openFileHandle(at: currentFileURL)
         }
     }
+
 
     private func closeCurrentFile() {
         do {
