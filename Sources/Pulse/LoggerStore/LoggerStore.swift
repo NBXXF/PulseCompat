@@ -801,7 +801,7 @@ public extension LoggerStore {
         clearMemoryCaches()
     }
 
-    private func clearMemoryCaches() {
+    internal func clearMemoryCaches() {
         tasksCache.removeAll()
         requestsCache.removeAll()
         responsesCache.removeAll()
