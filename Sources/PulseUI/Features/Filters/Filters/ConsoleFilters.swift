@@ -50,7 +50,8 @@ extension ConsoleFilters {
     }
 
     struct LogLevels: ConsoleFilterProtocol {
-        var levels: Set<LoggerStore.Level> = Set(LoggerStore.Level.allCases)
+        /// 默认改成 这几个,避免卡死页面
+        var levels: Set<LoggerStore.Level> = Set([LoggerStore.Level.warning,LoggerStore.Level.error,LoggerStore.Level.critical])
             .subtracting([LoggerStore.Level.trace])
     }
 
