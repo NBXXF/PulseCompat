@@ -50,7 +50,7 @@ extension ConsoleFilters {
     }
 
     struct LogLevels: ConsoleFilterProtocol {
-        var levels: Set<LoggerStore.Level> = Set([LoggerStore.Level.warning,LoggerStore.Level.error,LoggerStore.Level.critical])
+        var levels: Set<LoggerStore.Level> = Set(LoggerStore.Level.allCases)
             .subtracting([LoggerStore.Level.trace])
     }
 

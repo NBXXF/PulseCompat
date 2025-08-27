@@ -40,6 +40,7 @@ final class ConsoleDataSource: NSObject, NSFetchedResultsControllerDelegate {
     }
 
     static let fetchBatchSize = 100
+    static let fetchMaxSize = 2000
 
     private let store: LoggerStore
     private let mode: ConsoleMode
@@ -70,6 +71,7 @@ final class ConsoleDataSource: NSObject, NSFetchedResultsControllerDelegate {
             NSSortDescriptor(key: sortKey, ascending: options.order == .ascending),
         ].compactMap { $0 }
         request.fetchBatchSize = ConsoleDataSource.fetchBatchSize
+        request.fetchLimit = ConsoleDataSource.fetchMaxSize   // 只取最近多少条日志
         request.relationshipKeyPathsForPrefetching = ["request"]
         controller = NSFetchedResultsController(
             fetchRequest: request,
