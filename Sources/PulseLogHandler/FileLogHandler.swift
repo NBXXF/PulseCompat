@@ -248,9 +248,10 @@ public final class FileLogHandler: LogHandler, @unchecked Sendable {
     }
 
     private static func timestamp(from date: Date) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        formatter.timeZone = TimeZone(identifier: "Asia/Shanghai") // 设置东八区
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZZZZZ" // ISO8601 格式，带毫秒和时区
+        formatter.locale = Locale(identifier: "en_US_POSIX")    // 保证格式固定
+        formatter.timeZone = TimeZone(identifier: "Asia/Shanghai") // 东八区
         return formatter.string(from: date)
     }
 
