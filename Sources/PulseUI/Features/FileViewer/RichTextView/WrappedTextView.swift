@@ -69,6 +69,8 @@
             final class Coordinator: NSObject, NSTextViewDelegate {
                 var onLinkTapped: ((URL) -> Bool)?
                 var cancellables: [AnyCancellable] = []
+                weak var textView: NSTextView?
+                var eventMonitor: Any?
 
                 func textView(_: NSTextView, clickedOnLink link: Any, at _: Int) -> Bool {
                     guard let url = link as? URL else {
@@ -78,6 +80,52 @@
                         return true
                     }
                     return false
+                }
+
+                // MARK: - Keyboard Shortcuts
+
+                func setupKeyboardMonitor(for textView: NSTextView) {
+                    self.textView = textView
+                    // Use a local event monitor for keyDown events
+                    eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+                        guard let self = self, let textView = self.textView else { return event }
+                        return self.handleKeyEvent(event, for: textView)
+                    }
+                }
+
+                func cleanupKeyboardMonitor() {
+                    if let monitor = eventMonitor {
+                        NSEvent.removeMonitor(monitor)
+                        eventMonitor = nil
+                    }
+                }
+
+                private func handleKeyEvent(_ event: NSEvent, for textView: NSTextView) -> NSEvent? {
+                    // Check for Ctrl key modifier
+                    guard event.modifierFlags.contains(.control) else {
+                        return event
+                    }
+
+                    guard let characters = event.charactersIgnoringModifiers?.lowercased() else {
+                        return event
+                    }
+
+                    switch characters {
+                    case "a":
+                        // Ctrl+A: Select All
+                        textView.selectAll(nil)
+                        return nil // Event handled, don't propagate
+                    case "c":
+                        // Ctrl+C: Copy
+                        textView.copy(nil)
+                        return nil // Event handled, don't propagate
+                    default:
+                        return event
+                    }
+                }
+
+                deinit {
+                    cleanupKeyboardMonitor()
                 }
             }
 
@@ -95,12 +143,19 @@
 
                 viewModel.textView = textView
 
+                // Setup keyboard shortcuts
+                context.coordinator.setupKeyboardMonitor(for: textView)
+
                 return scrollView
             }
 
             func updateNSView(_ scrollView: NSScrollView, context _: Context) {
                 let textView = scrollView.documentView as! NSTextView
                 textView.isAutomaticLinkDetectionEnabled = settings.isLinkDetectionEnabled && viewModel.isLinkDetectionEnabled
+            }
+
+            static func dismantleNSView(_ nsView: NSScrollView, coordinator: Coordinator) {
+                coordinator.cleanupKeyboardMonitor()
             }
 
             func makeCoordinator() -> Coordinator {
