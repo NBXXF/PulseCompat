@@ -17,6 +17,7 @@
             final class Coordinator: NSObject, UITextViewDelegate {
                 var onLinkTapped: ((URL) -> Bool)?
                 var cancellables: [AnyCancellable] = []
+                weak var textView: UITextView?
 
                 func textView(_: UITextView, shouldInteractWith URL: URL, in _: NSRange, interaction _: UITextItemInteraction) -> Bool {
                     if let onLinkTapped = onLinkTapped, onLinkTapped(URL) {
@@ -31,6 +32,18 @@
                     }
                     return true
                 }
+
+                #if os(iOS)
+                // MARK: - Keyboard Shortcuts (iOS)
+
+                @objc func selectAllText() {
+                    textView?.selectAll(nil)
+                }
+
+                @objc func copySelectedText() {
+                    textView?.copy(nil)
+                }
+                #endif
             }
 
             func makeUIView(context: Context) -> UXTextView {
@@ -44,9 +57,44 @@
                 configureTextView(textView)
                 textView.delegate = context.coordinator
                 textView.attributedText = viewModel.originalText
+
+                // Ensure text view supports selection and copy
+                textView.isSelectable = true
+                textView.isUserInteractionEnabled = true
+
+                // Setup keyboard shortcuts
+                context.coordinator.textView = textView
+                setupKeyCommands(for: textView)
+
                 viewModel.textView = textView
                 return textView
             }
+
+            #if os(iOS)
+            private func setupKeyCommands(for textView: UITextView) {
+                // Add keyboard shortcuts for Ctrl+A (Select All) and Ctrl+C (Copy)
+                let selectAllCommand = UIKeyCommand(
+                    input: "a",
+                    modifierFlags: .control,
+                    action: #selector(Coordinator.selectAllText)
+                )
+                selectAllCommand.wantsPriorityOverSystemBehavior = true
+
+                let copyCommand = UIKeyCommand(
+                    input: "c",
+                    modifierFlags: .control,
+                    action: #selector(Coordinator.copySelectedText)
+                )
+                copyCommand.wantsPriorityOverSystemBehavior = true
+
+                textView.addKeyCommand(selectAllCommand)
+                textView.addKeyCommand(copyCommand)
+            }
+            #else
+            private func setupKeyCommands(for textView: UITextView) {
+                // visionOS doesn't need explicit key commands
+            }
+            #endif
 
             func updateUIView(_ textView: UXTextView, context _: Context) {
                 textView.isAutomaticLinkDetectionEnabled = settings.isLinkDetectionEnabled && viewModel.isLinkDetectionEnabled
