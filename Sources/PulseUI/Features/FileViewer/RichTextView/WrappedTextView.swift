@@ -17,7 +17,6 @@
             final class Coordinator: NSObject, UITextViewDelegate {
                 var onLinkTapped: ((URL) -> Bool)?
                 var cancellables: [AnyCancellable] = []
-                weak var textView: UITextView?
 
                 func textView(_: UITextView, shouldInteractWith URL: URL, in _: NSRange, interaction _: UITextItemInteraction) -> Bool {
                     if let onLinkTapped = onLinkTapped, onLinkTapped(URL) {
@@ -32,27 +31,13 @@
                     }
                     return true
                 }
-
-                #if os(iOS)
-                // MARK: - Keyboard Shortcuts (iOS)
-
-                @objc func selectAllText() {
-                    textView?.selectAll(nil)
-                }
-
-                @objc func copySelectedText() {
-                    textView?.copy(nil)
-                }
-                #endif
             }
 
             func makeUIView(context: Context) -> UXTextView {
-                let textView: UITextView
+                let textView = KeyboardEnabledTextView()
                 if #available(iOS 16, *) {
                     // Disables the new TextKit 2 which is extremely slow on iOS 16
-                    textView = UITextView(usingTextLayoutManager: false)
-                } else {
-                    textView = UITextView()
+                    textView.isTextLayoutManagerEnabled = false
                 }
                 configureTextView(textView)
                 textView.delegate = context.coordinator
@@ -62,39 +47,9 @@
                 textView.isSelectable = true
                 textView.isUserInteractionEnabled = true
 
-                // Setup keyboard shortcuts
-                context.coordinator.textView = textView
-                setupKeyCommands(for: textView)
-
                 viewModel.textView = textView
                 return textView
             }
-
-            #if os(iOS)
-            private func setupKeyCommands(for textView: UITextView) {
-                // Add keyboard shortcuts for Ctrl+A (Select All) and Ctrl+C (Copy)
-                let selectAllCommand = UIKeyCommand(
-                    input: "a",
-                    modifierFlags: .control,
-                    action: #selector(Coordinator.selectAllText)
-                )
-                selectAllCommand.wantsPriorityOverSystemBehavior = true
-
-                let copyCommand = UIKeyCommand(
-                    input: "c",
-                    modifierFlags: .control,
-                    action: #selector(Coordinator.copySelectedText)
-                )
-                copyCommand.wantsPriorityOverSystemBehavior = true
-
-                textView.addKeyCommand(selectAllCommand)
-                textView.addKeyCommand(copyCommand)
-            }
-            #else
-            private func setupKeyCommands(for textView: UITextView) {
-                // visionOS doesn't need explicit key commands
-            }
-            #endif
 
             func updateUIView(_ textView: UXTextView, context _: Context) {
                 textView.isAutomaticLinkDetectionEnabled = settings.isLinkDetectionEnabled && viewModel.isLinkDetectionEnabled
@@ -104,6 +59,35 @@
                 let coordinator = Coordinator()
                 coordinator.onLinkTapped = viewModel.onLinkTapped
                 return coordinator
+            }
+        }
+
+        // Custom UITextView subclass that handles Ctrl+A and Ctrl+C keyboard shortcuts
+        class KeyboardEnabledTextView: UITextView {
+            override var canBecomeFirstResponder: Bool { true }
+
+            override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
+                guard let key = presses.first?.key else {
+                    super.pressesBegan(presses, with: event)
+                    return
+                }
+
+                // Check for Ctrl modifier
+                guard key.modifierFlags.contains(.control) else {
+                    super.pressesBegan(presses, with: event)
+                    return
+                }
+
+                switch key.charactersIgnoringModifiers?.lowercased() {
+                case "a":
+                    // Ctrl+A: Select All
+                    self.selectAll(nil)
+                case "c":
+                    // Ctrl+C: Copy
+                    self.copy(nil)
+                default:
+                    super.pressesBegan(presses, with: event)
+                }
             }
         }
 
