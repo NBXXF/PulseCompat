@@ -34,10 +34,12 @@
             }
 
             func makeUIView(context: Context) -> UXTextView {
-                let textView = KeyboardEnabledTextView()
+                let textView: KeyboardEnabledTextView
                 if #available(iOS 16, *) {
                     // Disables the new TextKit 2 which is extremely slow on iOS 16
-                    textView.isTextLayoutManagerEnabled = false
+                    textView = KeyboardEnabledTextView(usingTextLayoutManager: false)
+                } else {
+                    textView = KeyboardEnabledTextView()
                 }
                 configureTextView(textView)
                 textView.delegate = context.coordinator
@@ -78,7 +80,9 @@
                     return
                 }
 
-                switch key.charactersIgnoringModifiers?.lowercased() {
+                let characters = key.charactersIgnoringModifiers.lowercased()
+
+                switch characters {
                 case "a":
                     // Ctrl+A: Select All
                     self.selectAll(nil)
