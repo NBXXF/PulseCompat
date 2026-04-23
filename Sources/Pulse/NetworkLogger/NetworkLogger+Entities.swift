@@ -1,18 +1,17 @@
 // The MIT License (MIT)
 //
-// 
+// Copyright (c) 2020-2026 Alexander Grebenyuk (github.com/kean).
 
 import Foundation
 
-public extension NetworkLogger {
-    struct Request: Hashable, Codable, Sendable {
+extension NetworkLogger {
+    public struct Request: Hashable, Codable, Sendable {
         public var url: URL?
         public var httpMethod: String?
         public var headers: [String: String]?
         public var cachePolicy: URLRequest.CachePolicy {
             rawCachePolicy.flatMap(URLRequest.CachePolicy.init) ?? .useProtocolCachePolicy
         }
-
         public var timeout: TimeInterval
         public var options: Options
 
@@ -52,25 +51,26 @@ public extension NetworkLogger {
         }
 
         public init(_ urlRequest: URLRequest) {
-            url = urlRequest.url
-            headers = urlRequest.allHTTPHeaderFields
-            httpMethod = urlRequest.httpMethod
-            rawCachePolicy = urlRequest.cachePolicy.rawValue
-            timeout = urlRequest.timeoutInterval
-            options = Options(urlRequest)
+            self.url = urlRequest.url
+            ///强烈注释：https://github.com/kean/Pulse/issues/268 解决urlRequest.allHTTPHeaderFields 部分机型闪退
+            self.headers = NetworkLogger.includeHeaders(urlRequest) ?? urlRequest.allHTTPHeaderFields
+            self.httpMethod = urlRequest.httpMethod
+            self.rawCachePolicy = urlRequest.cachePolicy.rawValue
+            self.timeout = urlRequest.timeoutInterval
+            self.options = Options(urlRequest)
         }
 
         init(_ entity: NetworkRequestEntity) {
-            url = entity.url.flatMap(URL.init)
-            httpMethod = entity.httpMethod
-            headers = entity.headers
-            rawCachePolicy = UInt(entity.rawCachePolicy)
-            timeout = TimeInterval(entity.timeoutInterval)
-            options = Options(entity)
+            self.url = entity.url.flatMap(URL.init)
+            self.httpMethod = entity.httpMethod
+            self.headers = entity.headers
+            self.rawCachePolicy = UInt(entity.rawCachePolicy)
+            self.timeout = TimeInterval(entity.timeoutInterval)
+            self.options = Options(entity)
         }
     }
 
-    struct Response: Hashable, Codable, Sendable {
+    public struct Response: Hashable, Codable, Sendable {
         public var statusCode: Int?
         public var headers: [String: String]?
 
@@ -80,22 +80,22 @@ public extension NetworkLogger {
 
         var isSuccess: Bool {
             // By default, use 200 for non-HTTP responses
-            (100 ..< 400).contains(statusCode ?? 200)
+            (100..<400).contains(statusCode ?? 200)
         }
 
         public init(_ urlResponse: URLResponse) {
             let httpResponse = urlResponse as? HTTPURLResponse
-            statusCode = httpResponse?.statusCode
-            headers = httpResponse?.allHeaderFields as? [String: String]
+            self.statusCode = httpResponse?.statusCode
+            self.headers = httpResponse?.allHeaderFields as? [String: String]
         }
 
         init(_ entity: NetworkResponseEntity) {
-            statusCode = Int(entity.statusCode)
-            headers = entity.headers
+            self.statusCode = Int(entity.statusCode)
+            self.headers = entity.headers
         }
     }
 
-    struct ResponseError: Codable, Sendable {
+    public struct ResponseError: Codable, Sendable {
         public var code: Int
         public var domain: String
         public var debugDescription: String
@@ -108,18 +108,18 @@ public extension NetworkLogger {
 
         public init(_ error: Swift.Error) {
             let error = error as NSError
-            code = error.code == 0 ? -1 : error.code
+            self.code = error.code == 0 ? -1 : error.code
             if error is Swift.DecodingError || error is NetworkLogger.DecodingError {
-                domain = NetworkLogger.DecodingError.domain
+                self.domain = NetworkLogger.DecodingError.domain
             } else {
-                domain = error.domain
+                self.domain = error.domain
             }
-            underlyingError = UnderlyingError(error)
+            self.underlyingError = UnderlyingError(error)
             // NetworkLogger.DecodingError has a custom description
             if let error = underlyingError?.error {
-                debugDescription = (error as NSError).debugDescription
+                self.debugDescription = (error as NSError).debugDescription
             } else {
-                debugDescription = error.debugDescription
+                self.debugDescription = error.debugDescription
             }
         }
 
@@ -128,7 +128,7 @@ public extension NetworkLogger {
 
             var error: Error? {
                 switch self {
-                case let .decodingError(error): return error
+                case .decodingError(let error): return error
                 }
             }
 
@@ -144,16 +144,16 @@ public extension NetworkLogger {
         }
     }
 
-    struct Metrics: Codable, Sendable {
+    public struct Metrics: Codable, Sendable {
         public var taskInterval: DateInterval
         public var redirectCount: Int
         public var transactions: [TransactionMetrics]
         public var totalTransferSize: TransferSizeInfo { TransferSizeInfo(metrics: self) }
 
         public init(metrics: URLSessionTaskMetrics) {
-            taskInterval = metrics.taskInterval
-            redirectCount = metrics.redirectCount
-            transactions = metrics.transactionMetrics.map(TransactionMetrics.init)
+            self.taskInterval = metrics.taskInterval
+            self.redirectCount = metrics.redirectCount
+            self.transactions = metrics.transactionMetrics.map(TransactionMetrics.init)
         }
 
         public init(taskInterval: DateInterval, redirectCount: Int, transactions: [TransactionMetrics]) {
@@ -163,16 +163,14 @@ public extension NetworkLogger {
         }
     }
 
-    struct TransferSizeInfo: Codable, Sendable {
+    public struct TransferSizeInfo: Codable, Sendable {
         // MARK: Sent
-
         public var totalBytesSent: Int64 { requestBodyBytesSent + requestHeaderBytesSent }
         public var requestHeaderBytesSent: Int64 = 0
         public var requestBodyBytesBeforeEncoding: Int64 = 0
         public var requestBodyBytesSent: Int64 = 0
 
         // MARK: Received
-
         public var totalBytesReceived: Int64 { responseBodyBytesReceived + responseHeaderBytesReceived }
         public var responseHeaderBytesReceived: Int64 = 0
         public var responseBodyBytesAfterDecoding: Int64 = 0
@@ -224,11 +222,10 @@ public extension NetworkLogger {
         }
     }
 
-    struct TransactionMetrics: Codable, Sendable {
+    public struct TransactionMetrics: Codable, Sendable {
         public var fetchType: URLSessionTaskMetrics.ResourceFetchType {
             type.flatMap(URLSessionTaskMetrics.ResourceFetchType.init) ?? .networkLoad
         }
-
         public var request: Request
         public var response: Response?
         public var timing: TransactionTimingInfo
@@ -242,7 +239,6 @@ public extension NetworkLogger {
         public var negotiatedTLSProtocolVersion: tls_protocol_version_t? {
             tlsVersion.flatMap(tls_protocol_version_t.init)
         }
-
         public var negotiatedTLSCipherSuite: tls_ciphersuite_t? {
             tlsSuite.flatMap(tls_ciphersuite_t.init)
         }
@@ -252,28 +248,28 @@ public extension NetworkLogger {
         private var type: Int?
 
         public init(metrics: URLSessionTaskTransactionMetrics) {
-            request = Request(metrics.request)
-            response = metrics.response.map(Response.init)
-            timing = TransactionTimingInfo(metrics: metrics)
-            networkProtocol = metrics.networkProtocolName
-            type = (metrics.resourceFetchType == .networkLoad ? nil : metrics.resourceFetchType.rawValue)
-            transferSize = TransferSizeInfo(metrics: metrics)
-            conditions = Conditions(metrics: metrics)
-            localAddress = metrics.localAddress
-            remoteAddress = metrics.remoteAddress
-            localPort = metrics.localPort
-            remotePort = metrics.remotePort
-            tlsVersion = metrics.negotiatedTLSProtocolVersion?.rawValue
-            tlsSuite = metrics.negotiatedTLSCipherSuite?.rawValue
+            self.request = Request(metrics.request)
+            self.response = metrics.response.map(Response.init)
+            self.timing = TransactionTimingInfo(metrics: metrics)
+            self.networkProtocol = metrics.networkProtocolName
+            self.type = (metrics.resourceFetchType == .networkLoad ? nil :  metrics.resourceFetchType.rawValue)
+            self.transferSize = TransferSizeInfo(metrics: metrics)
+            self.conditions = Conditions(metrics: metrics)
+            self.localAddress = metrics.localAddress
+            self.remoteAddress = metrics.remoteAddress
+            self.localPort = metrics.localPort
+            self.remotePort = metrics.remotePort
+            self.tlsVersion = metrics.negotiatedTLSProtocolVersion?.rawValue
+            self.tlsSuite = metrics.negotiatedTLSCipherSuite?.rawValue
         }
 
         public init(request: Request, response: Response? = nil, resourceFetchType: URLSessionTaskMetrics.ResourceFetchType) {
             self.request = request
             self.response = response
-            timing = .init()
-            type = resourceFetchType.rawValue
-            transferSize = .init()
-            conditions = []
+            self.timing = .init()
+            self.type = resourceFetchType.rawValue
+            self.transferSize = .init()
+            self.conditions = []
         }
 
         public struct Conditions: OptionSet, Codable, Sendable {
@@ -309,23 +305,23 @@ public extension NetworkLogger {
         }
 
         init(_ entity: NetworkTransactionMetricsEntity) {
-            request = NetworkLogger.Request(entity.request)
-            response = entity.response.map(NetworkLogger.Response.init)
-            timing = entity.timing
-            networkProtocol = entity.networkProtocol
-            transferSize = entity.transferSize
-            conditions = Conditions(entity)
-            localAddress = entity.localAddress
-            localPort = Int(entity.localPort)
-            remoteAddress = entity.remoteAddress
-            remotePort = Int(entity.remotePort)
-            tlsVersion = UInt16(entity.rawNegotiatedTLSProtocolVersion)
-            tlsSuite = UInt16(entity.rawNegotiatedTLSCipherSuite)
-            type = Int(entity.rawFetchType)
+            self.request = NetworkLogger.Request(entity.request)
+            self.response = entity.response.map(NetworkLogger.Response.init)
+            self.timing = entity.timing
+            self.networkProtocol = entity.networkProtocol
+            self.transferSize = entity.transferSize
+            self.conditions = Conditions(entity)
+            self.localAddress = entity.localAddress
+            self.localPort = Int(entity.localPort)
+            self.remoteAddress = entity.remoteAddress
+            self.remotePort = Int(entity.remotePort)
+            self.tlsVersion = UInt16(entity.rawNegotiatedTLSProtocolVersion)
+            self.tlsSuite = UInt16(entity.rawNegotiatedTLSCipherSuite)
+            self.type = Int(entity.rawFetchType)
         }
     }
 
-    struct TransactionTimingInfo: Codable, Sendable {
+    public struct TransactionTimingInfo: Codable, Sendable {
         public var fetchStartDate: Date?
         public var domainLookupStartDate: Date?
         public var domainLookupEndDate: Date?
@@ -346,17 +342,17 @@ public extension NetworkLogger {
         }
 
         public init(metrics: URLSessionTaskTransactionMetrics) {
-            fetchStartDate = metrics.fetchStartDate
-            domainLookupStartDate = metrics.domainLookupStartDate
-            domainLookupEndDate = metrics.domainLookupEndDate
-            connectStartDate = metrics.connectStartDate
-            secureConnectionStartDate = metrics.secureConnectionStartDate
-            secureConnectionEndDate = metrics.secureConnectionEndDate
-            connectEndDate = metrics.connectEndDate
-            requestStartDate = metrics.requestStartDate
-            requestEndDate = metrics.requestEndDate
-            responseStartDate = metrics.responseStartDate
-            responseEndDate = metrics.responseEndDate
+            self.fetchStartDate = metrics.fetchStartDate
+            self.domainLookupStartDate = metrics.domainLookupStartDate
+            self.domainLookupEndDate = metrics.domainLookupEndDate
+            self.connectStartDate = metrics.connectStartDate
+            self.secureConnectionStartDate = metrics.secureConnectionStartDate
+            self.secureConnectionEndDate = metrics.secureConnectionEndDate
+            self.connectEndDate = metrics.connectEndDate
+            self.requestStartDate = metrics.requestStartDate
+            self.requestEndDate = metrics.requestEndDate
+            self.responseStartDate = metrics.responseStartDate
+            self.responseEndDate = metrics.responseEndDate
         }
 
         public init() {}
@@ -376,7 +372,7 @@ public extension NetworkLogger {
         }
     }
 
-    @frozen enum TaskType: Int16, Codable, CaseIterable, Sendable {
+    @frozen public enum TaskType: Int16, Codable, CaseIterable, Sendable {
         case dataTask
         case downloadTask
         case uploadTask
@@ -405,7 +401,7 @@ public extension NetworkLogger {
         }
     }
 
-    enum DecodingError: Error, Codable, CustomDebugStringConvertible, Sendable {
+    public enum DecodingError: Error, Codable, CustomDebugStringConvertible, Sendable {
         case typeMismatch(type: String, context: Context)
         case valueNotFound(type: String, context: Context)
         case keyNotFound(codingKey: CodingKey, context: Context)
@@ -419,8 +415,8 @@ public extension NetworkLogger {
             public var debugDescription: String
 
             public init(_ context: Swift.DecodingError.Context) {
-                codingPath = context.codingPath.map(CodingKey.init)
-                debugDescription = context.debugDescription.trimmingCharacters(in: .punctuationCharacters)
+                self.codingPath = context.codingPath.map(CodingKey.init)
+                self.debugDescription = context.debugDescription.trimmingCharacters(in: .punctuationCharacters)
             }
 
             public init(codingPath: [CodingKey], debugDescription: String) {
@@ -447,8 +443,8 @@ public extension NetworkLogger {
 
             public var debugDescription: String {
                 switch self {
-                case let .string(value): return "\(value)"
-                case let .int(value): return "\(value)"
+                case .string(let value): return "\(value)"
+                case .int(let value): return "\(value)"
                 }
             }
         }
@@ -470,23 +466,23 @@ public extension NetworkLogger {
 
         public var context: Context? {
             switch self {
-            case let .typeMismatch(_, context): return context
-            case let .valueNotFound(_, context): return context
-            case let .keyNotFound(_, context): return context
-            case let .dataCorrupted(context): return context
+            case .typeMismatch(_, let context): return context
+            case .valueNotFound(_, let context): return context
+            case .keyNotFound(_, let context): return context
+            case .dataCorrupted(let context): return context
             case .unknown: return nil
             }
         }
 
         public var debugDescription: String {
             switch self {
-            case let .typeMismatch(type, context):
+            case .typeMismatch(let type, let context):
                 return "DecodingError.typeMismatch(type: \"\(type)\", path: \"\(context.formattedPath)\", \"\(context.debugDescription)\")"
-            case let .valueNotFound(type, context):
+            case .valueNotFound(let type, let context):
                 return "DecodingError.valueNotFound(type: \"\(type)\", path: \"\(context.formattedPath)\", \"\(context.debugDescription)\")"
-            case let .keyNotFound(codingKey, context):
+            case .keyNotFound(let codingKey, let context):
                 return "DecodingError.keyNotFound(key: \"\(codingKey.debugDescription)\", path: \"\(context.formattedPath)\", \"\(context.debugDescription)\")"
-            case let .dataCorrupted(context):
+            case .dataCorrupted(let context):
                 return "DecodingError.dataCorrupted(path: \(context.formattedPath), \"\(context.debugDescription)\")"
             case .unknown:
                 return "DecodingError.unknown"
@@ -494,7 +490,7 @@ public extension NetworkLogger {
         }
     }
 
-    struct ContentType: Hashable, ExpressibleByStringLiteral {
+    public struct ContentType: Hashable, ExpressibleByStringLiteral {
         /// The type and subtype of the content type. This is everything except for
         /// any parameters that are also attached.
         public var type: String
@@ -531,6 +527,11 @@ public extension NetworkLogger {
         public var isImage: Bool { type.hasPrefix("image/") }
         public var isHTML: Bool { type.contains("html") }
         public var isEncodedForm: Bool { type == "application/x-www-form-urlencoded" }
+        public var isProtobuf: Bool { type.contains("protobuf") || type.contains("grpc") }
+
+        public var lastComponent: String {
+            type.components(separatedBy: "/").last ?? type
+        }
     }
 }
 

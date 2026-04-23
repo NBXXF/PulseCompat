@@ -1,6 +1,6 @@
 // The MIT License (MIT)
 //
-// 
+// Copyright (c) 2020-2026 Alexander Grebenyuk (github.com/kean).
 
 import Foundation
 
@@ -14,12 +14,12 @@ extension LoggerStore.Event {
         switch self {
         case .messageStored, .networkTaskProgressUpdated:
             return self
-        case let .networkTaskCreated(event):
+        case .networkTaskCreated(let event):
             var event = event
             event.originalRequest = event.originalRequest.redactingSensitiveHeaders(excludedHeaders)
             event.currentRequest = event.currentRequest?.redactingSensitiveHeaders(excludedHeaders)
             return .networkTaskCreated(event)
-        case let .networkTaskCompleted(event):
+        case .networkTaskCompleted(let event):
             var event = event
             event.originalRequest = event.originalRequest.redactingSensitiveHeaders(excludedHeaders)
             event.currentRequest = event.currentRequest?.redactingSensitiveHeaders(excludedHeaders)
@@ -36,12 +36,12 @@ extension LoggerStore.Event {
         switch self {
         case .messageStored, .networkTaskProgressUpdated:
             return self
-        case let .networkTaskCreated(event):
+        case .networkTaskCreated(let event):
             var event = event
             event.originalRequest = event.originalRequest.redactingSensitiveQueryItems(excludedQueryItems)
             event.currentRequest = event.currentRequest?.redactingSensitiveQueryItems(excludedQueryItems)
             return .networkTaskCreated(event)
-        case let .networkTaskCompleted(event):
+        case .networkTaskCompleted(let event):
             var event = event
             event.originalRequest = event.originalRequest.redactingSensitiveQueryItems(excludedQueryItems)
             event.currentRequest = event.currentRequest?.redactingSensitiveQueryItems(excludedQueryItems)
@@ -57,7 +57,7 @@ extension LoggerStore.Event {
         switch self {
         case .messageStored, .networkTaskProgressUpdated, .networkTaskCreated:
             return self
-        case let .networkTaskCompleted(event):
+        case .networkTaskCompleted(let event):
             var event = event
             event.requestBody = event.requestBody?.redactingSensitiveFields(excludedDataFields)
             event.responseBody = event.responseBody?.redactingSensitiveFields(excludedDataFields)
@@ -179,7 +179,7 @@ private extension URL {
 
 private extension Data {
     func redactingSensitiveFields(_ fields: Set<String>) -> Data {
-        guard let json = try? JSONSerialization.jsonObject(with: self) else {
+        guard let json = try? JSONSerialization.jsonObject(with: self)  else {
             return self
         }
         let redacted = _redactingSensitiveFields(json, fields)
@@ -190,8 +190,20 @@ private extension Data {
 private func _redactingSensitiveFields(_ value: Any, _ fields: Set<String>) -> Any {
     switch value {
     case var object as [String: Any]:
-        for key in object.keys.filter(fields.contains) {
-            object[key] = "<private>"
+        for key in object.keys {
+            if fields.contains(key) {
+                // Redact any value (including objects and arrays) matching the key
+                object[key] = "<private>"
+            } else if let value = object[key] as? [String: Any] {
+                // Recessively process values that are objects
+                object[key] = _redactingSensitiveFields(value, fields)
+            } else if var value = object[key] as? [Any] {
+                // Recessively process values that are arrays
+                value = value.map({ _redactingSensitiveFields($0, fields) })
+                object[key] = value
+            } else {
+                // All other key/values are left untouched.
+            }
         }
         return object
     case let array as [Any]:
