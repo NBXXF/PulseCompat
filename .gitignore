@@ -5,3 +5,5 @@ xcuserdata/
 .swiftpm/
 Package.resolved
 /.idea/
+/Demo/Sources/.build/
+/Demo/Sources/Integrations/.build/
