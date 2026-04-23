@@ -307,6 +307,9 @@
         let string: () -> NSAttributedString
 
         var body: some View {
+            Button(action: { UXPasteboard.general.string = string().string }) {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
             Button(action: { shareItems = ShareService.share(string(), as: .plainText) }) {
                 Label("Share as Text", systemImage: "square.and.arrow.up")
             }
