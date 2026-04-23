@@ -10,7 +10,7 @@ import Foundation
 public extension NetworkLogger {
     /// 允许记录的 header 键集合。为空时不启用过滤,记录全部 header;
     /// 非空时仅保留集合中包含的 key(大小写不敏感)。
-    static var includeHeaderKeys: Set<String> = []
+    nonisolated(unsafe) static var includeHeaderKeys: Set<String> = []
 
     
     /// 强烈注释：https://github.com/kean/Pulse/issues/268 解决urlRequest.allHTTPHeaderFields 部分机型闪退
