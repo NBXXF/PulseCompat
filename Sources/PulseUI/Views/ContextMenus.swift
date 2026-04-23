@@ -307,7 +307,11 @@
         let string: () -> NSAttributedString
 
         var body: some View {
-            Button(action: { UXPasteboard.general.string = string().string }) {
+            Button(action: {
+                let plainText = TextUtilities.plainText(from: ShareService.sanitized(string(), as: .plainText))
+                UXPasteboard.general.string = plainText
+                runHapticFeedback()
+            }) {
                 Label("Copy", systemImage: "doc.on.doc")
             }
             Button(action: { shareItems = ShareService.share(string(), as: .plainText) }) {
