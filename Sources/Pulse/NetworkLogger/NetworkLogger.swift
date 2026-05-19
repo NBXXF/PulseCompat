@@ -42,6 +42,7 @@ public final class NetworkLogger: @unchecked Sendable {
         get { _shared.value }
         set { _shared.value = newValue }
     }
+
     private static let _shared = Mutex(NetworkLogger())
 
     /// The logger configuration.
@@ -177,7 +178,7 @@ public final class NetworkLogger: @unchecked Sendable {
             taskType: NetworkLogger.TaskType(task: task),
             createdAt: Date(),
             originalRequest: .init(originalRequest),
-            currentRequest: task.currentRequest.map(Request.init),
+            currentRequest: task.currentRequest.map { Request($0, originUrlRequest: originalRequest) },
             label: configuration.label,
             taskDescription: task.taskDescription
         )))
@@ -247,7 +248,7 @@ public final class NetworkLogger: @unchecked Sendable {
             taskType: NetworkLogger.TaskType(task: task),
             createdAt: Date(),
             originalRequest: Request(originalRequest),
-            currentRequest: task.currentRequest.map(Request.init),
+            currentRequest: task.currentRequest.map { Request($0, originUrlRequest: originalRequest) },
             response: task.response.map(Response.init),
             error: error.map(ResponseError.init),
             requestBody: originalRequest.httpBody ?? originalRequest.httpBodyStreamData(),
@@ -280,7 +281,8 @@ public final class NetworkLogger: @unchecked Sendable {
         let absoluteString = url.absoluteString
         if !includedHosts.isEmpty || !includedURLs.isEmpty {
             guard includedHosts.contains(where: { $0.isMatch(host) }) ||
-                    includedURLs.contains(where: { $0.isMatch(absoluteString) }) else {
+                includedURLs.contains(where: { $0.isMatch(absoluteString) })
+            else {
                 return false
             }
         }

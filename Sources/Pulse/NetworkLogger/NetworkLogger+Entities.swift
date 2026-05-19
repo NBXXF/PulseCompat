@@ -52,8 +52,20 @@ extension NetworkLogger {
 
         public init(_ urlRequest: URLRequest) {
             self.url = urlRequest.url
+            self.headers = urlRequest.allHTTPHeaderFields
+            self.httpMethod = urlRequest.httpMethod
+            self.rawCachePolicy = urlRequest.cachePolicy.rawValue
+            self.timeout = urlRequest.timeoutInterval
+            self.options = Options(urlRequest)
+        }
+        
+        
+        public init(_ urlRequest: URLRequest,originUrlRequest: URLRequest) {
+            self.url = urlRequest.url
             ///强烈注释：https://github.com/kean/Pulse/issues/268 解决urlRequest.allHTTPHeaderFields 部分机型闪退
-            self.headers = NetworkLogger.includeHeaders(urlRequest) ?? urlRequest.allHTTPHeaderFields
+            ///  用 value(forHTTPHeaderField:) 按 key 逐个读取,且仅读取白名单内的 key。 这个方案试过了,也不靠谱,还是出现闪退
+            /// self.headers = urlRequest.allHTTPHeaderFields
+            self.headers = originUrlRequest.allHTTPHeaderFields
             self.httpMethod = urlRequest.httpMethod
             self.rawCachePolicy = urlRequest.cachePolicy.rawValue
             self.timeout = urlRequest.timeoutInterval
