@@ -105,6 +105,17 @@ public final class NetworkLogger: @unchecked Sendable {
         /// is ignored completely.
         public var willHandleEvent: @Sendable (LoggerStore.Event) -> LoggerStore.Event? = { $0 }
 
+        /// Allows overriding how request headers are extracted from `URLRequest`.
+        ///
+        /// Accessing request headers via Foundation getters can crash on some
+        /// devices/OS states. This includes direct reads from
+        /// `URLRequest.allHTTPHeaderFields` and key-by-key reads via
+        /// `URLRequest.value(forHTTPHeaderField:)`.
+        ///
+        /// The default returns `nil` to avoid touching these risky code paths.
+        /// Provide your own extractor if you need request headers.
+        public var requestHeadersProvider: @Sendable (URLRequest) -> [String: String]? = { _ in nil }
+
         /// Initializes the default configuration.
         public init() {}
     }
@@ -173,12 +184,15 @@ public final class NetworkLogger: @unchecked Sendable {
         guard !task.isKind(of: AVAssetDownloadTask.self) else { return }
 #endif
         guard let originalRequest = task.originalRequest else { return }
+        let originalRequestHeaders = configuration.requestHeadersProvider(originalRequest)
         send(.networkTaskCreated(LoggerStore.Event.NetworkTaskCreated(
             taskId: context.taskId,
             taskType: NetworkLogger.TaskType(task: task),
             createdAt: Date(),
-            originalRequest: .init(originalRequest),
-            currentRequest: task.currentRequest.map { Request($0, originUrlRequest: originalRequest) },
+            originalRequest: .init(originalRequest, headers: originalRequestHeaders),
+            currentRequest: task.currentRequest.map { request in
+                Request(request, headers: configuration.requestHeadersProvider(request))
+            },
             label: configuration.label,
             taskDescription: task.taskDescription
         )))
@@ -242,13 +256,16 @@ public final class NetworkLogger: @unchecked Sendable {
         let metrics = context.metrics
         let data = context.data
         lock.unlock()
+        let originalRequestHeaders = configuration.requestHeadersProvider(originalRequest)
 
         send(.networkTaskCompleted(.init(
             taskId: context.taskId,
             taskType: NetworkLogger.TaskType(task: task),
             createdAt: Date(),
-            originalRequest: Request(originalRequest),
-            currentRequest: task.currentRequest.map { Request($0, originUrlRequest: originalRequest) },
+            originalRequest: Request(originalRequest, headers: originalRequestHeaders),
+            currentRequest: task.currentRequest.map { request in
+                Request(request, headers: configuration.requestHeadersProvider(request))
+            },
             response: task.response.map(Response.init),
             error: error.map(ResponseError.init),
             requestBody: originalRequest.httpBody ?? originalRequest.httpBodyStreamData(),
